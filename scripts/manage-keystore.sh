@@ -150,11 +150,56 @@ case "$cmd" in
     fi
     sha256sum "$apk" > "${apk}.sha256"
     echo "[SHA-256] $(cat "${apk}.sha256")"
-    if command -v apksigner >/dev/null 2>&1; then
-      apksigner verify --verbose --print-certs "$apk"
-    elif command -v jarsigner >/dev/null 2>&1; then
-      jarsigner -verify -verbose -certs "$apk" | tail -n 20
+    APKSIGNER_BIN="$(command -v apksigner || true)"
+    if [ -z "$APKSIGNER_BIN" ]; then
+      SDK_DIR="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/android/sdk}}"
+      APKSIGNER_BIN="$(find "$SDK_DIR/build-tools" -maxdepth 2 -name apksigner 2>/dev/null | sort -V | tail -n 1 || true)"
     fi
+    if [ -n "$APKSIGNER_BIN" ] && [ -x "$APKSIGNER_BIN" ]; then
+      "$APKSIGNER_BIN" verify --verbose --print-certs "$apk"
+    elif command -v jarsigner >/dev/null 2>&1; then
+      echo "[WARN] apksigner not found; falling back to jarsigner -verify"
+      jarsigner -verify -verbose -certs "$apk" | tail -n 20
+    else
+      echo "[ERROR] Neither apksigner nor jarsigner found to verify APK signature."
+      exit 1
+    fi
+    ;;
+
+  sign-apk-compat)
+    apk="${2:-}"
+    ks="${3:-$KEYSTORE_FILE}"
+    if [ -z "$apk" ] || [ ! -f "$apk" ] || [ ! -f "$ks" ]; then
+      echo "[ERROR] Usage: bash scripts/manage-keystore.sh sign-apk-compat <apk_path> [keystore_path]"
+      exit 1
+    fi
+    SDK_DIR="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/android/sdk}}"
+    APKSIGNER_BIN="$(command -v apksigner || find "$SDK_DIR/build-tools" -maxdepth 2 -name apksigner 2>/dev/null | sort -V | tail -n 1 || true)"
+    ZIPALIGN_BIN="$(command -v zipalign || find "$SDK_DIR/build-tools" -maxdepth 2 -name zipalign 2>/dev/null | sort -V | tail -n 1 || true)"
+    if [ -z "$APKSIGNER_BIN" ] || [ ! -x "$APKSIGNER_BIN" ]; then
+      echo "[WARN] apksigner not found; keeping AGP v2 signature."
+      exit 0
+    fi
+    if [ -n "$ZIPALIGN_BIN" ] && [ -x "$ZIPALIGN_BIN" ]; then
+      aligned_tmp="${apk}.aligned.tmp"
+      "$ZIPALIGN_BIN" -f -p 4 "$apk" "$aligned_tmp"
+      mv "$aligned_tmp" "$apk"
+    fi
+    STORE_PASS="${STORE_PASSWORD:-}"
+    KEY_PASS="${KEY_PASSWORD:-$STORE_PASS}"
+    "$APKSIGNER_BIN" sign \
+      --ks "$ks" \
+      --ks-key-alias "$KEY_ALIAS" \
+      --ks-pass "pass:${STORE_PASS}" \
+      --key-pass "pass:${KEY_PASS}" \
+      --min-sdk-version 21 \
+      --v1-signing-enabled true \
+      --v2-signing-enabled true \
+      --v3-signing-enabled true \
+      --v4-signing-enabled false \
+      "$apk"
+    rm -f "${apk}.idsig"
+    echo "[OK] Signed $apk with APK Signature Schemes v1 + v2 + v3."
     ;;
 
   generate-license-key)
