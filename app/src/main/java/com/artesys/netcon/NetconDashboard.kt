@@ -1,6 +1,5 @@
 package com.artesys.netcon
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -42,13 +41,13 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.filled.Terminal
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -56,7 +55,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -80,7 +78,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -114,13 +111,7 @@ private enum class DashboardTab(val label: String, val tag: String) {
 }
 
 // Brushed-steel / burnished-copper Design #2 surface tokens
-private val SilverTop = Color(0xFFE7ECF0)
-private val SilverMid = Color(0xFFCAD2DA)
-private val SilverBottom = Color(0xFFA7B1BC)
-private val SilverBorderLight = Color(0xFFF3F6F9)
-private val SilverBorderDark = Color(0xFF7D8792)
 private val DarkInk = Color(0xFF1F2730)
-private val DarkInkMuted = Color(0xFF47525E)
 private val GoldText = Color(0xFFF5A623)
 private val GoldAccent = Color(0xFFD9822B)
 private val CyanGauge = Color(0xFF38BDF8)
@@ -169,6 +160,8 @@ internal fun NetconDashboard(
     onDisconnect: () -> Unit,
     onBlockedProtocol: () -> Unit,
     onStartConfigured: (String, String) -> Unit,
+    batteryOptimizationIgnored: Boolean = false,
+    onToggleBatteryOptimization: (Boolean) -> Unit = {},
     onOpenVpnSettings: () -> Unit,
     onExport: () -> Unit,
     onMeasurePing: suspend () -> Int?,
@@ -255,6 +248,16 @@ internal fun NetconDashboard(
             "connected" -> appendSentinelLog("[VPN] Tunnel active · Routing mode: $route · DNS: $dns")
             "error" -> appendSentinelLog("[ERR] ${vpnStatus.error.ifBlank { "Tunnel stopped with error" }}")
         }
+    }
+
+    LaunchedEffect(batteryOptimizationIgnored) {
+        appendSentinelLog(
+            if (batteryOptimizationIgnored) {
+                "[PWR] Battery Optimization Ignore ENABLED · NetconVpnService protected"
+            } else {
+                "[PWR] Battery Optimization active · Exempt NetconVpnService in CONFIG"
+            },
+        )
     }
 
     fun findLocalMatch() {
@@ -363,150 +366,132 @@ internal fun NetconDashboard(
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .windowInsetsPadding(WindowInsets.navigationBars)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+                .padding(horizontal = 10.dp, vertical = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
                 modifier = Modifier
                     .widthIn(max = 600.dp)
-                    .fillMaxWidth(),
+                    .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp),
             ) {
-                DashboardLogoCard(
+                UnifiedHeaderBar(
                     state = vpnStatus.state,
                     protocol = protocol,
-                )
-
-                TrialLicenseStatusBar(
                     licenseStatus = licenseStatus,
                     onOpenLicenseDialog = { licenseDialog = true },
                 )
 
-                // Three top navigation pills matching Design #2
-                DesignTwoNavigation(
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                ) {
+                    when (tab) {
+                        DashboardTab.Connection -> ConnectionScreen(
+                            importText = importText,
+                            onImportTextChange = { importText = it },
+                            activity = activity,
+                            onActivityChange = { savedActivity = it },
+                            recommendationMessage = recommendationMessage,
+                            recommendationBusy = recommendationBusy,
+                            onFindLocalMatch = ::findLocalMatch,
+                            serverName = serverName,
+                            protocol = protocol,
+                            serverLocation = serverLocation,
+                            serverLatitude = serverLatitude,
+                            serverLongitude = serverLongitude,
+                            state = vpnStatus.state,
+                            error = if (errorState) vpnStatus.error else feedback,
+                            duration = duration,
+                            pingMs = pingMs,
+                            pingBusy = pingBusy,
+                            onRefreshPing = ::refreshPing,
+                            receivedBytes = vpnStatus.receivedBytes,
+                            sentBytes = vpnStatus.sentBytes,
+                            downloadMbps = downloadMbps,
+                            uploadMbps = uploadMbps,
+                            sentinelPaused = sentinelPaused,
+                            onToggleSentinelPause = { sentinelPaused = !sentinelPaused },
+                            sentinelLogs = sentinelLogs,
+                            onClearSentinelLogs = { sentinelLogs.clear() },
+                            onOpenServers = { countryCode ->
+                                if (!licenseStatus.isAccessAllowed) {
+                                    licenseDialog = true
+                                } else {
+                                    serverDialogCountry = countryCode
+                                    serverDialog = true
+                                }
+                            },
+                            userLatitude = userLatitude,
+                            userLongitude = userLongitude,
+                            userLocationSource = userLocationSource,
+                            userLocationBusy = userLocationBusy,
+                            onRequestUserLocation = onRequestUserLocation,
+                            onImport = { raw ->
+                                if (onImport(raw)) {
+                                    appendSentinelLog("[CFG] Imported local configuration")
+                                    importText = ""
+                                    serverDialog = false
+                                }
+                            },
+                            onProtocolAllowed = {
+                                val normalized = protocol.lowercase(Locale.ROOT)
+                                normalized == "freedom" || enabledProtocols.contains(normalized)
+                            },
+                            onConnect = {
+                                if (!licenseStatus.isAccessAllowed) {
+                                    onDisconnect()
+                                    licenseDialog = true
+                                } else {
+                                    onConnect()
+                                }
+                            },
+                            onDisconnect = onDisconnect,
+                            onBlockedProtocol = onBlockedProtocol,
+                            onStartConfigured = {
+                                if (!licenseStatus.isAccessAllowed) {
+                                    onDisconnect()
+                                    licenseDialog = true
+                                } else {
+                                    onStartConfigured(dns, route)
+                                }
+                            },
+                            onDismissError = onFeedbackDismiss,
+                        )
+
+                        DashboardTab.Settings -> SettingsScreen(
+                            dns = dns,
+                            onDnsChange = { dns = it },
+                            route = route,
+                            onRouteChange = { route = it },
+                            protocols = enabledProtocols,
+                            onProtocolsChange = { enabledProtocols = it },
+                            batteryOptimizationIgnored = batteryOptimizationIgnored,
+                            onToggleBatteryOptimization = onToggleBatteryOptimization,
+                            onOpenVpnSettings = onOpenVpnSettings,
+                            onExport = onExport,
+                        )
+
+                        DashboardTab.Info -> InfoScreen(
+                            serverName = serverName,
+                            protocol = protocol,
+                            state = vpnStatus.state,
+                            licenseStatus = licenseStatus,
+                            onOpenLicenseDialog = { licenseDialog = true },
+                            onSimulateTrialExpired = onSimulateTrialExpired,
+                            onResetTrialWindow = onResetTrialWindow,
+                            onOpenVpnSettings = onOpenVpnSettings,
+                        )
+                    }
+                }
+
+                // Fixed native Android bottom navigation bar
+                NativeBottomNavigation(
                     current = tab,
                     onSelect = { tab = it },
                 )
-
-                when (tab) {
-                    DashboardTab.Connection -> ConnectionScreen(
-                        importText = importText,
-                        onImportTextChange = { importText = it },
-                        activity = activity,
-                        onActivityChange = { savedActivity = it },
-                        recommendationMessage = recommendationMessage,
-                        recommendationBusy = recommendationBusy,
-                        onFindLocalMatch = ::findLocalMatch,
-                        serverName = serverName,
-                        protocol = protocol,
-                        serverLocation = serverLocation,
-                        serverLatitude = serverLatitude,
-                        serverLongitude = serverLongitude,
-                        state = vpnStatus.state,
-                        error = if (errorState) vpnStatus.error else feedback,
-                        duration = duration,
-                        pingMs = pingMs,
-                        pingBusy = pingBusy,
-                        onRefreshPing = ::refreshPing,
-                        receivedBytes = vpnStatus.receivedBytes,
-                        sentBytes = vpnStatus.sentBytes,
-                        downloadMbps = downloadMbps,
-                        uploadMbps = uploadMbps,
-                        sentinelPaused = sentinelPaused,
-                        onToggleSentinelPause = { sentinelPaused = !sentinelPaused },
-                        sentinelLogs = sentinelLogs,
-                        onClearSentinelLogs = { sentinelLogs.clear() },
-                        onOpenServers = { countryCode ->
-                            if (!licenseStatus.isAccessAllowed) {
-                                licenseDialog = true
-                            } else {
-                                serverDialogCountry = countryCode
-                                serverDialog = true
-                            }
-                        },
-                        userLatitude = userLatitude,
-                        userLongitude = userLongitude,
-                        userLocationSource = userLocationSource,
-                        userLocationBusy = userLocationBusy,
-                        onRequestUserLocation = onRequestUserLocation,
-                        onImport = { raw ->
-                            if (onImport(raw)) {
-                                appendSentinelLog("[CFG] Imported local configuration")
-                                importText = ""
-                                serverDialog = false
-                            }
-                        },
-                        onProtocolAllowed = {
-                            val normalized = protocol.lowercase(Locale.ROOT)
-                            normalized == "freedom" || enabledProtocols.contains(normalized)
-                        },
-                        onConnect = {
-                            if (!licenseStatus.isAccessAllowed) {
-                                onDisconnect()
-                                licenseDialog = true
-                            } else {
-                                onConnect()
-                            }
-                        },
-                        onDisconnect = onDisconnect,
-                        onBlockedProtocol = onBlockedProtocol,
-                        onStartConfigured = {
-                            if (!licenseStatus.isAccessAllowed) {
-                                onDisconnect()
-                                licenseDialog = true
-                            } else {
-                                onStartConfigured(dns, route)
-                            }
-                        },
-                        onDismissError = onFeedbackDismiss,
-                    )
-
-                    DashboardTab.Settings -> SettingsScreen(
-                        dns = dns,
-                        onDnsChange = { dns = it },
-                        route = route,
-                        onRouteChange = { route = it },
-                        protocols = enabledProtocols,
-                        onProtocolsChange = { enabledProtocols = it },
-                        onOpenVpnSettings = onOpenVpnSettings,
-                        onExport = onExport,
-                    )
-
-                    DashboardTab.Info -> InfoScreen(
-                        serverName = serverName,
-                        protocol = protocol,
-                        state = vpnStatus.state,
-                        licenseStatus = licenseStatus,
-                        onOpenLicenseDialog = { licenseDialog = true },
-                        onSimulateTrialExpired = onSimulateTrialExpired,
-                        onResetTrialWindow = onResetTrialWindow,
-                        onOpenVpnSettings = onOpenVpnSettings,
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        "NETCON SECURITY ARCHITECTURE",
-                        color = DarkInkMuted,
-                        fontFamily = JetBrainsMonoFont,
-                        fontSize = 8.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        "XRAY CORE · ZERO-LOG",
-                        color = DarkInkMuted,
-                        fontFamily = JetBrainsMonoFont,
-                        fontSize = 8.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
             }
         }
 
@@ -573,191 +558,166 @@ internal fun NetconDashboard(
 }
 
 @Composable
-private fun DashboardLogoCard(
-    state: String = "disconnected",
-    protocol: String = "",
+private fun UnifiedHeaderBar(
+    state: String,
+    protocol: String,
+    licenseStatus: NetconLicenseManager.LicenseStatus,
+    onOpenLicenseDialog: () -> Unit,
 ) {
-    val connected = state == "connected"
-    val connecting = state == "connecting"
-    val accentDot = when {
-        connected -> EmeraldOnline
-        connecting -> GoldText
+    val accentDot = when (state) {
+        "connected" -> Color(0xFF22FF88)
+        "connecting" -> GoldText
+        "error" -> Color(0xFFEF4444)
         else -> GoldAccent
     }
     val protoLabel = when (protocol.uppercase(Locale.ROOT)) {
-        "", "FREEDOM" -> "VLESS · REALITY"
+        "", "FREEDOM" -> "VLESS"
         else -> protocol.uppercase(Locale.ROOT)
     }
+    val isLicensed = licenseStatus.isLicensed
+    val isFrozen = licenseStatus.isFrozen
+    val licColor = when {
+        isLicensed -> EmeraldOnline
+        isFrozen -> Color(0xFFEF4444)
+        else -> GoldText
+    }
+    val licText = when {
+        isLicensed -> "LICENSED"
+        isFrozen -> "FROZEN"
+        else -> licenseStatus.formatRemainingCountdown()
+    }
 
-    Box(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .height(44.dp)
+            .clip(RoundedCornerShape(10.dp))
             .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xFFF1F5F8), Color(0xFFD6DEE6), Color(0xFFB7C2CE)),
+                Brush.linearGradient(
+                    listOf(Color(0xFF0A1018), Color(0xFF131E2E), Color(0xFF0B121C)),
                 ),
             )
-            .border(1.5.dp, SilverBorderLight, RoundedCornerShape(14.dp))
-            .padding(6.dp),
+            .border(1.2.dp, Color(0xFF2E3E54), RoundedCornerShape(10.dp))
+            .padding(horizontal = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFF0A1018), Color(0xFF131E2E), Color(0xFF0B121C)),
-                    ),
-                )
-                .border(1.dp, Color(0xFF2E3E54), RoundedCornerShape(10.dp))
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // Subtle copper & cyan ambient glow behind the logo mark
-            Canvas(modifier = Modifier.matchParentSize()) {
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color(0x38D9822B), Color.Transparent),
-                        center = Offset(size.width * 0.25f, size.height * 0.5f),
-                        radius = size.minDimension * 0.85f,
-                    ),
-                    center = Offset(size.width * 0.25f, size.height * 0.5f),
-                    radius = size.minDimension * 0.85f,
-                )
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color(0x2238BDF8), Color.Transparent),
-                        center = Offset(size.width * 0.82f, size.height * 0.35f),
-                        radius = size.minDimension * 0.7f,
-                    ),
-                    center = Offset(size.width * 0.82f, size.height * 0.35f),
-                    radius = size.minDimension * 0.7f,
-                )
-            }
-
-            ScrewHead(Modifier.align(Alignment.TopStart), angle = 22f)
-            ScrewHead(Modifier.align(Alignment.TopEnd), angle = -28f)
-            ScrewHead(Modifier.align(Alignment.BottomStart), angle = -18f)
-            ScrewHead(Modifier.align(Alignment.BottomEnd), angle = 34f)
-
-            Column(
+            Image(
+                painter = painterResource(R.drawable.netcon_logo),
+                contentDescription = "Netcon logo",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.height(20.dp),
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 2.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(7.dp),
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(Color(0xFF060B12))
+                    .border(1.dp, Color(0xFF273649), RoundedCornerShape(5.dp))
+                    .padding(horizontal = 6.dp, vertical = 3.dp),
             ) {
-                Image(
-                    painter = painterResource(R.drawable.netcon_logo),
-                    contentDescription = "Netcon logo",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .height(42.dp)
-                        .fillMaxWidth(0.76f),
+                Box(
+                    Modifier
+                        .size(6.dp)
+                        .background(accentDot, CircleShape),
                 )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(7.dp),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .background(accentDot, CircleShape),
-                    )
-                    Text(
-                        "PRECISION MULTI-PROTOCOL TUNNEL",
-                        color = Color(0xFFE2E8F0),
-                        fontFamily = JetBrainsMonoFont,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.9.sp,
-                    )
-                }
-
                 Text(
-                    "$protoLabel  ·  XRAY CORE  ·  ZERO-LOG",
-                    color = Color(0xFF94A3B8),
+                    "$protoLabel · XRAY",
+                    color = Color(0xFFCBD5E1),
                     fontFamily = JetBrainsMonoFont,
                     fontSize = 8.sp,
-                    letterSpacing = 0.5.sp,
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }
-    }
-}
 
-@Composable
-private fun ScrewHead(modifier: Modifier = Modifier, angle: Float = 30f) {
-    Canvas(modifier = modifier.size(13.dp)) {
-        val r = size.minDimension / 2f
-        drawCircle(
-            brush = Brush.radialGradient(listOf(Color(0xFFEFF3F6), Color(0xFF8C96A0))),
-            radius = r,
-        )
-        drawCircle(
-            color = Color(0xFF5D6670),
-            radius = r,
-            style = Stroke(width = 0.8.dp.toPx()),
-        )
-        rotate(angle) {
-            drawLine(
-                color = Color(0xFF3E464F),
-                start = Offset(center.x - r * 0.65f, center.y),
-                end = Offset(center.x + r * 0.65f, center.y),
-                strokeWidth = 1.4.dp.toPx(),
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(licColor.copy(alpha = 0.14f))
+                .border(1.dp, licColor.copy(alpha = 0.58f), RoundedCornerShape(6.dp))
+                .testTag("trial_license_bar")
+                .clickable(onClick = onOpenLicenseDialog)
+                .padding(horizontal = 8.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            Box(
+                Modifier
+                    .size(6.dp)
+                    .background(licColor, CircleShape),
+            )
+            Text(
+                licText,
+                color = if (isLicensed) Color(0xFF4ADE80) else licColor,
+                fontFamily = JetBrainsMonoFont,
+                fontSize = 8.5.sp,
+                fontWeight = FontWeight.Bold,
             )
         }
     }
 }
 
 @Composable
-private fun DesignTwoNavigation(current: DashboardTab, onSelect: (DashboardTab) -> Unit) {
+private fun NativeBottomNavigation(current: DashboardTab, onSelect: (DashboardTab) -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                Brush.verticalGradient(listOf(Color(0xFF141C27), Color(0xFF0A1017))),
+            )
+            .border(1.dp, Color(0xFF2E3E54), RoundedCornerShape(12.dp))
+            .padding(horizontal = 6.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         DashboardTab.entries.forEach { item ->
             val active = item == current
+            val icon = when (item) {
+                DashboardTab.Connection -> Icons.Filled.Bolt
+                DashboardTab.Settings -> Icons.Filled.Tune
+                DashboardTab.Info -> Icons.Filled.Info
+            }
             Row(
                 modifier = Modifier
                     .weight(1f)
-                    .heightIn(min = 48.dp)
+                    .fillMaxSize()
                     .testTag(item.tag)
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(
-                        if (active) {
-                            Brush.verticalGradient(listOf(Color(0xFFF3F6F9), Color(0xFFD5DCE3)))
-                        } else {
-                            Brush.verticalGradient(listOf(Color(0xFFD8DFE6), Color(0xFFBFC8D1)))
-                        },
+                        if (active) Color(0xFF192738) else Color.Transparent,
                     )
                     .border(
-                        width = if (active) 1.5.dp else 1.dp,
-                        color = if (active) SilverBorderLight else Color(0xFF9EA7B2),
-                        shape = RoundedCornerShape(10.dp),
+                        width = if (active) 1.dp else 0.dp,
+                        color = if (active) GoldAccent.copy(alpha = 0.65f) else Color.Transparent,
+                        shape = RoundedCornerShape(8.dp),
                     )
                     .clickable { onSelect(item) }
-                    .padding(horizontal = 10.dp, vertical = 10.dp),
+                    .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(
-                            if (active) EmeraldOnline else Color(0xFF87929E),
-                            CircleShape,
-                        ),
+                Icon(
+                    imageVector = icon,
+                    contentDescription = item.label,
+                    tint = if (active) GoldText else Color(0xFF94A3B8),
+                    modifier = Modifier.size(16.dp),
                 )
-                Spacer(Modifier.width(7.dp))
+                Spacer(Modifier.width(5.dp))
                 Text(
                     item.label,
-                    color = if (active) DarkInk else DarkInkMuted,
+                    color = if (active) Color(0xFFF8FAFC) else Color(0xFF94A3B8),
                     fontFamily = JetBrainsMonoFont,
-                    fontSize = 11.sp,
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.6.sp,
+                    letterSpacing = 0.5.sp,
                 )
             }
         }
@@ -806,17 +766,21 @@ private fun ConnectionScreen(
     onBlockedProtocol: () -> Unit,
     onDismissError: () -> Unit,
 ) {
-    var showToolsDrawer by rememberSaveable { mutableStateOf(false) }
+    var showToolsDialog by rememberSaveable { mutableStateOf(false) }
+    var showSentinelDialog by rememberSaveable { mutableStateOf(false) }
     val countryCode = remember(serverLocation, serverLatitude, serverLongitude) {
         inferCountryCode(serverLocation, serverLatitude, serverLongitude) ?: "SG"
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        // 1. F-16 / F-22 Raptor Avionics MFD Telemetry Cluster (Connection Status, Latency, TX Speed)
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(7.dp),
+    ) {
+        // 1. Compact F-16 / F-22 Raptor Avionics MFD Telemetry Cluster
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
+                .clip(RoundedCornerShape(12.dp))
                 .background(
                     Brush.verticalGradient(
                         listOf(
@@ -826,9 +790,9 @@ private fun ConnectionScreen(
                         ),
                     ),
                 )
-                .border(1.5.dp, Color(0xFF334459), RoundedCornerShape(14.dp))
-                .padding(horizontal = 12.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .border(1.2.dp, Color(0xFF334459), RoundedCornerShape(12.dp))
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             val isPulsingStatus = state == "connected" || state == "connecting"
             val statusLabel = when (state) {
@@ -872,24 +836,24 @@ private fun ConnectionScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    "TELEMETRY",
+                    "COCKPIT TELEMETRY",
                     color = Color(0xFF22FF88),
                     fontFamily = JetBrainsMonoFont,
-                    fontSize = 10.sp,
+                    fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.8.sp,
+                    letterSpacing = 0.7.sp,
                 )
                 Row(
                     modifier = Modifier
                         .clip(CircleShape)
                         .background(statusColor.copy(alpha = 0.14f))
                         .border(1.dp, statusColor.copy(alpha = 0.48f), CircleShape)
-                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     Box(
-                        modifier = Modifier.size(13.dp),
+                        modifier = Modifier.size(11.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         if (isPulsingStatus) {
@@ -897,12 +861,8 @@ private fun ConnectionScreen(
                                 val maxR = size.minDimension / 2f
                                 drawCircle(
                                     color = statusColor.copy(alpha = (1f - pillPulsePhase) * 0.68f),
-                                    radius = 3.2.dp.toPx() + (maxR - 3.2.dp.toPx()) * pillPulsePhase,
-                                    style = Stroke(width = 1.4.dp.toPx()),
-                                )
-                                drawCircle(
-                                    color = statusColor.copy(alpha = (1f - pillPulsePhase) * 0.28f),
-                                    radius = 3.2.dp.toPx() + (maxR - 3.2.dp.toPx()) * pillPulsePhase,
+                                    radius = 2.8.dp.toPx() + (maxR - 2.8.dp.toPx()) * pillPulsePhase,
+                                    style = Stroke(width = 1.2.dp.toPx()),
                                 )
                             }
                         }
@@ -913,7 +873,7 @@ private fun ConnectionScreen(
                         }
                         Box(
                             Modifier
-                                .size((7f * coreScale).dp)
+                                .size((6f * coreScale).dp)
                                 .background(statusColor, CircleShape),
                         )
                     }
@@ -921,7 +881,7 @@ private fun ConnectionScreen(
                         statusLabel,
                         color = statusColor,
                         fontFamily = JetBrainsMonoFont,
-                        fontSize = 9.sp,
+                        fontSize = 8.5.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp,
                     )
@@ -931,7 +891,7 @@ private fun ConnectionScreen(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 DesignTwoGauge(
                     topLabel = "ms",
@@ -943,6 +903,7 @@ private fun ConnectionScreen(
                     secondaryColor = GoldText,
                     sweepAngleDeg = if (state == "connected" || state == "connecting" || pingBusy) hudSweepAngle else 0f,
                     modifier = Modifier
+                        .widthIn(max = 94.dp)
                         .weight(1f)
                         .testTag("ping_gauge")
                         .clickable(onClick = onRefreshPing),
@@ -961,7 +922,9 @@ private fun ConnectionScreen(
                             else -> onBlockedProtocol()
                         }
                     },
-                    modifier = Modifier.weight(1.12f),
+                    modifier = Modifier
+                        .widthIn(max = 104.dp)
+                        .weight(1.1f),
                 )
 
                 val txSpeedMbps = if (state == "connected") {
@@ -979,14 +942,16 @@ private fun ConnectionScreen(
                     accentColor = CyanGauge,
                     secondaryColor = Color(0xFF22FF88),
                     sweepAngleDeg = if (state == "connected") hudSweepAngle else 0f,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .widthIn(max = 94.dp)
+                        .weight(1f),
                 )
             }
 
-            // Two F-16 DED (Data Entry Display) Odometer Readout Boxes: RX & TX
+            // Compact F-16 DED Odometer strip: RX & TX
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 OledTelemetryCard(
                     label = "RX",
@@ -1006,47 +971,49 @@ private fun ConnectionScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(7.dp))
                         .background(Color(0xFF331418))
-                        .border(1.dp, Color(0xFFEF4444), RoundedCornerShape(8.dp))
+                        .border(1.dp, Color(0xFFEF4444), RoundedCornerShape(7.dp))
                         .clickable(onClick = onDismissError)
-                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                        .padding(horizontal = 8.dp, vertical = 5.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
                         error,
                         color = Color(0xFFFCA5A5),
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
                     )
                     Icon(
                         Icons.Filled.Close,
                         contentDescription = "Dismiss error",
                         tint = Color(0xFFFCA5A5),
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(14.dp),
                     )
                 }
             }
         }
 
-        // 2. Server Selection Card matching Design #2 ('SG-Cloudflare-Reality-01' + SWITCH)
+        // 2. Compact Active Server Strip
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
+                .clip(RoundedCornerShape(11.dp))
                 .background(
                     Brush.verticalGradient(listOf(ServerNavyTop, ServerNavyBottom)),
                 )
-                .border(1.dp, Color(0xFF29384D), RoundedCornerShape(14.dp))
+                .border(1.dp, Color(0xFF29384D), RoundedCornerShape(11.dp))
                 .clickable { onOpenServers("") }
-                .padding(horizontal = 14.dp, vertical = 13.dp),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(9.dp),
         ) {
             CountryFlagBadge(countryCode = countryCode)
 
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -1054,7 +1021,7 @@ private fun ConnectionScreen(
                     Text(
                         serverName.ifBlank { "No Server Selected" },
                         color = Color(0xFFF8FAFC),
-                        fontSize = 15.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -1062,7 +1029,7 @@ private fun ConnectionScreen(
                     )
                     Box(
                         modifier = Modifier
-                            .size(7.dp)
+                            .size(6.dp)
                             .background(
                                 if (state == "connected") EmeraldOnline else GoldAccent,
                                 CircleShape,
@@ -1075,10 +1042,10 @@ private fun ConnectionScreen(
                 }
                 val pingLabel = pingMs?.let { "${it}ms" } ?: "—"
                 Text(
-                    "• $protoLabel | ${serverLocation.ifBlank { "PORT: 443" }} | PING: $pingLabel",
+                    "$protoLabel · ${serverLocation.ifBlank { "PORT 443" }} · $pingLabel",
                     color = CyanGauge,
                     fontFamily = JetBrainsMonoFont,
-                    fontSize = 9.sp,
+                    fontSize = 8.5.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -1086,35 +1053,35 @@ private fun ConnectionScreen(
 
             Row(
                 modifier = Modifier
-                    .heightIn(min = 42.dp)
+                    .heightIn(min = 34.dp)
                     .testTag("switch_server_button")
-                    .clip(RoundedCornerShape(9.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(
                         Brush.verticalGradient(listOf(Color(0xFF1F2B3D), Color(0xFF131B28))),
                     )
-                    .border(1.dp, Color(0xFF3E4E68), RoundedCornerShape(9.dp))
+                    .border(1.dp, Color(0xFF3E4E68), RoundedCornerShape(8.dp))
                     .clickable { onOpenServers("") }
-                    .padding(horizontal = 13.dp, vertical = 9.dp),
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
             ) {
                 Text(
                     "SWITCH",
                     color = Color(0xFFE2E8F0),
                     fontFamily = JetBrainsMonoFont,
-                    fontSize = 10.sp,
+                    fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Icon(
                     imageVector = Icons.Filled.KeyboardArrowDown,
                     contentDescription = "Switch server",
                     tint = Color(0xFFE2E8F0),
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(14.dp),
                 )
             }
         }
 
-        // 3. Proton VPN-Style World Map with automatic user location
+        // 3. Flexible Interactive Global Routing Map (stretches cleanly to fill remaining height)
         ProtonWorldMapPanel(
             serverName = serverName,
             locationName = serverLocation,
@@ -1127,220 +1094,277 @@ private fun ConnectionScreen(
             vpnState = state,
             onBrowseCountryServers = { code -> onOpenServers(code) },
             onRequestUserLocation = onRequestUserLocation,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .heightIn(min = 128.dp),
+            compact = true,
         )
 
-        // 4. AI Live Sentinel Stream Card matching Design #2
-        Column(
+        // 4. Compact Docked Sentinel Ticker + Quick Modal Tools Bar
+        val latestLog = sentinelLogs.lastOrNull() ?: "[SENTINEL] Xray Core ready · Tap LOGS to inspect"
+        val logColor = when {
+            latestLog.startsWith("[ERR]") -> Color(0xFFFCA5A5)
+            latestLog.startsWith("[VPN]") -> Color(0xFF4ADE80)
+            latestLog.startsWith("[LOCAL]") -> Color(0xFFFCD34D)
+            latestLog.startsWith("[PING]") -> CyanGauge
+            else -> Color(0xFFCBD5E1)
+        }
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
+                .clip(RoundedCornerShape(10.dp))
                 .background(
-                    Brush.verticalGradient(listOf(Color(0xFF8C9AA8), Color(0xFF515E6B))),
+                    Brush.verticalGradient(listOf(SentinelTealTop, SentinelTealBottom)),
                 )
-                .border(1.5.dp, Color(0xFFB8C4D0), RoundedCornerShape(14.dp))
-                .padding(4.dp),
+                .border(1.dp, Color(0xFF284357), RoundedCornerShape(10.dp))
+                .padding(horizontal = 9.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
         ) {
-            Box(
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { showSentinelDialog = true },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Terminal,
+                    contentDescription = "Sentinel stream",
+                    tint = Color(0xFF7DD3FC),
+                    modifier = Modifier.size(14.dp),
+                )
+                Text(
+                    latestLog,
+                    color = logColor,
+                    fontFamily = JetBrainsMonoFont,
+                    fontSize = 8.5.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            SentinelControlChip(
+                label = "LOGS",
+                testTag = "sentinel_open_button",
+                onClick = { showSentinelDialog = true },
+            )
+
+            Row(
+                modifier = Modifier
+                    .testTag("ai_panel_toggle")
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xFFF6D08A), Color(0xFFD9822B), Color(0xFF9C5114)),
+                        ),
+                    )
+                    .clickable { showToolsDialog = true }
+                    .padding(horizontal = 8.dp, vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.AutoAwesome,
+                    contentDescription = "Import & Match",
+                    tint = Color(0xFF1D0E05),
+                    modifier = Modifier.size(11.dp),
+                )
+                Text(
+                    "TOOLS",
+                    color = Color(0xFF1D0E05),
+                    fontFamily = JetBrainsMonoFont,
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+    }
+
+    if (showSentinelDialog) {
+        Dialog(onDismissRequest = { showSentinelDialog = false }) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(11.dp))
-                    .background(
-                        Brush.verticalGradient(listOf(SentinelTealTop, SentinelTealBottom)),
-                    )
-                    .border(1.dp, Color(0xFF284357), RoundedCornerShape(11.dp))
-                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(NetconColors.PanelSurface)
+                    .border(1.dp, Color(0xFF284357), RoundedCornerShape(12.dp))
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                ScrewHead(Modifier.align(Alignment.TopStart), angle = 25f)
-                ScrewHead(Modifier.align(Alignment.TopEnd), angle = -35f)
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            "AI LIVE SENTINEL STREAM",
+                            color = Color(0xFF7DD3FC),
+                            fontFamily = JetBrainsMonoFont,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            if (sentinelPaused) "STREAM PAUSED · LOCAL TELEMETRY"
+                            else "XRAY CORE + LOCAL TELEMETRY",
+                            color = Color(0xFF94A3B8),
+                            fontFamily = JetBrainsMonoFont,
+                            fontSize = 8.5.sp,
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        SentinelControlChip(
+                            label = if (sentinelPaused) "RESUME" else "PAUSE",
+                            testTag = "sentinel_pause_button",
+                            onClick = onToggleSentinelPause,
+                        )
+                        SentinelControlChip(
+                            label = "CLEAR",
+                            testTag = "sentinel_clear_button",
+                            onClick = onClearSentinelLogs,
+                        )
+                    }
+                }
 
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 6.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                        .heightIn(min = 160.dp, max = 300.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFF04090E))
+                        .border(1.dp, Color(0xFF1D3342), RoundedCornerShape(8.dp))
+                        .verticalScroll(rememberScrollState())
+                        .padding(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                "AI LIVE SENTINEL STREAM",
-                                color = Color(0xFF7DD3FC),
-                                fontFamily = JetBrainsMonoFont,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.6.sp,
-                            )
-                            Text(
-                                if (sentinelPaused) "STREAM PAUSED · LOCAL TELEMETRY"
-                                else "XRAY CORE + LOCAL SERVER MATCH",
-                                color = Color(0xFF94A3B8),
-                                fontFamily = JetBrainsMonoFont,
-                                fontSize = 8.sp,
-                            )
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            SentinelControlChip(
-                                label = if (sentinelPaused) "RESUME" else "PAUSE",
-                                testTag = "sentinel_pause_button",
-                                onClick = onToggleSentinelPause,
-                            )
-                            SentinelControlChip(
-                                label = "CLEAR",
-                                testTag = "sentinel_clear_button",
-                                onClick = onClearSentinelLogs,
-                            )
-                        }
-                    }
-
-                    // Terminal log viewport
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF04090E))
-                            .border(1.dp, Color(0xFF1D3342), RoundedCornerShape(8.dp))
-                            .padding(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        if (sentinelLogs.isEmpty()) {
-                            Text(
-                                "[SENTINEL] Stream cleared. Awaiting tunnel or config activity…",
-                                color = Color(0xFF64748B),
-                                fontFamily = JetBrainsMonoFont,
-                                fontSize = 9.sp,
-                            )
-                        } else {
-                            sentinelLogs.takeLast(5).forEach { line ->
-                                val lineColor = when {
-                                    line.startsWith("[ERR]") -> Color(0xFFFCA5A5)
-                                    line.startsWith("[VPN]") -> Color(0xFF4ADE80)
-                                    line.startsWith("[LOCAL]") -> Color(0xFFFCD34D)
-                                    line.startsWith("[PING]") -> CyanGauge
-                                    else -> Color(0xFFCBD5E1)
-                                }
-                                Text(
-                                    line,
-                                    color = lineColor,
-                                    fontFamily = JetBrainsMonoFont,
-                                    fontSize = 9.sp,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
-                        }
-                    }
-
-                    // Expandable AI Route & Quick Config Import controls
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(7.dp))
-                            .background(Color(0xFF0D1D28))
-                            .border(1.dp, Color(0xFF284357), RoundedCornerShape(7.dp))
-                            .testTag("ai_panel_toggle")
-                            .clickable { showToolsDrawer = !showToolsDrawer }
-                            .padding(horizontal = 10.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.AutoAwesome,
-                                contentDescription = null,
-                                tint = GoldText,
-                                modifier = Modifier.size(15.dp),
-                            )
-                            Text(
-                                "IMPORT CONFIG & LOCAL SERVER MATCH",
-                                color = Color(0xFFE2E8F0),
-                                fontFamily = JetBrainsMonoFont,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                        Icon(
-                            imageVector = if (showToolsDrawer) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                            contentDescription = "Toggle import and local server matching tools",
-                            tint = Color(0xFF94A3B8),
-                            modifier = Modifier.size(18.dp),
+                    if (sentinelLogs.isEmpty()) {
+                        Text(
+                            "[SENTINEL] Stream cleared. Awaiting tunnel or config activity…",
+                            color = Color(0xFF64748B),
+                            fontFamily = JetBrainsMonoFont,
+                            fontSize = 9.5.sp,
                         )
-                    }
-
-                    AnimatedVisibility(visible = showToolsDrawer) {
-                        Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                            RecessedInput(
-                                value = importText,
-                                onValueChange = onImportTextChange,
-                                placeholder = "Paste vless://, vmess://, trojan://, ss:// or Xray JSON",
-                            )
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                CopperButton(
-                                    label = "IMPORT LINK",
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .testTag("import_link_button"),
-                                ) { onImport(importText.trim()) }
-                                SecondaryActionButton(
-                                    label = "PUBLIC SERVERS",
-                                    icon = Icons.Filled.Public,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .testTag("open_public_servers_button"),
-                                ) { onOpenServers("") }
+                    } else {
+                        sentinelLogs.forEach { line ->
+                            val lineColor = when {
+                                line.startsWith("[ERR]") -> Color(0xFFFCA5A5)
+                                line.startsWith("[VPN]") -> Color(0xFF4ADE80)
+                                line.startsWith("[LOCAL]") -> Color(0xFFFCD34D)
+                                line.startsWith("[PING]") -> CyanGauge
+                                else -> Color(0xFFCBD5E1)
                             }
-
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                                    .background(Color(0xFF1F3647)),
-                            )
-
                             Text(
-                                "ACTIVITY PROFILE · LOCAL DISTANCE MATCH",
-                                color = Color(0xFF9FB2C4),
+                                line,
+                                color = lineColor,
                                 fontFamily = JetBrainsMonoFont,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.5.sp,
                             )
-                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                NativeLocalServerRecommender.activities.forEach { label ->
-                                    Keycap(
-                                        label = label,
-                                        modifier = Modifier.weight(1f),
-                                        selected = activity == label,
-                                    ) { onActivityChange(label) }
-                                }
-                            }
-                            Text(
-                                "Uses approximate region distance only; server latency and streaming capacity are not provided.",
-                                color = Color(0xFFCBD5E1),
-                                fontSize = 10.sp,
-                            )
-                            CopperButton(
-                                label = if (recommendationBusy) "MATCHING LOCALLY…" else "LOCAL MATCH · FIND PUBLIC SERVER",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .testTag("local_server_match_button"),
-                                onClick = onFindLocalMatch,
-                            )
-                            if (recommendationMessage.isNotBlank()) {
-                                Text(
-                                    recommendationMessage,
-                                    color = if (recommendationBusy) GoldText else Color(0xFFE2E8F0),
-                                    fontSize = 10.sp,
-                                )
-                            }
                         }
                     }
+                }
+
+                SecondaryActionButton(
+                    label = "CLOSE",
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { showSentinelDialog = false },
+                )
+            }
+        }
+    }
+
+    if (showToolsDialog) {
+        Dialog(onDismissRequest = { showToolsDialog = false }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(NetconColors.PanelSurface)
+                    .border(1.dp, GoldText.copy(alpha = 0.55f), RoundedCornerShape(12.dp))
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "IMPORT CONFIG & LOCAL MATCH",
+                        color = NetconColors.CopperLight,
+                        fontFamily = JetBrainsMonoFont,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    IconButton(onClick = { showToolsDialog = false }, modifier = Modifier.minimumInteractiveComponentSize()) {
+                        Icon(Icons.Filled.Close, contentDescription = "Close", tint = NetconColors.TextSecondary)
+                    }
+                }
+
+                RecessedInput(
+                    value = importText,
+                    onValueChange = onImportTextChange,
+                    placeholder = "Paste vless://, vmess://, trojan://, ss:// or Xray JSON",
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CopperButton(
+                        label = "IMPORT LINK",
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("import_link_button"),
+                    ) {
+                        onImport(importText.trim())
+                        showToolsDialog = false
+                    }
+                    SecondaryActionButton(
+                        label = "PUBLIC SERVERS",
+                        icon = Icons.Filled.Public,
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("open_public_servers_button"),
+                    ) {
+                        showToolsDialog = false
+                        onOpenServers("")
+                    }
+                }
+
+                Box(Modifier.fillMaxWidth().height(1.dp).background(Color(0xFF1F3647)))
+
+                Text(
+                    "ACTIVITY PROFILE · LOCAL DISTANCE MATCH",
+                    color = Color(0xFF9FB2C4),
+                    fontFamily = JetBrainsMonoFont,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    NativeLocalServerRecommender.activities.forEach { label ->
+                        Keycap(
+                            label = label,
+                            modifier = Modifier.weight(1f),
+                            selected = activity == label,
+                        ) { onActivityChange(label) }
+                    }
+                }
+                Text(
+                    "Matches nearest server using local region distance only; zero external AI telemetry.",
+                    color = Color(0xFFCBD5E1),
+                    fontSize = 10.sp,
+                )
+                CopperButton(
+                    label = if (recommendationBusy) "MATCHING LOCALLY…" else "LOCAL MATCH · FIND PUBLIC SERVER",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("local_server_match_button"),
+                    onClick = onFindLocalMatch,
+                )
+                if (recommendationMessage.isNotBlank()) {
+                    Text(
+                        recommendationMessage,
+                        color = if (recommendationBusy) GoldText else Color(0xFFE2E8F0),
+                        fontSize = 10.sp,
+                    )
                 }
             }
         }
@@ -1767,10 +1791,10 @@ private fun OledTelemetryCard(
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(9.dp))
+            .clip(RoundedCornerShape(7.dp))
             .background(Color(0xFF04090E))
-            .border(1.2.dp, valueColor.copy(alpha = 0.42f), RoundedCornerShape(9.dp))
-            .padding(horizontal = 11.dp, vertical = 10.dp),
+            .border(1.dp, valueColor.copy(alpha = 0.42f), RoundedCornerShape(7.dp))
+            .padding(horizontal = 9.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -1778,7 +1802,7 @@ private fun OledTelemetryCard(
             label,
             color = Color(0xFF94A3B8),
             fontFamily = JetBrainsMonoFont,
-            fontSize = 9.sp,
+            fontSize = 8.5.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.5.sp,
         )
@@ -1786,7 +1810,7 @@ private fun OledTelemetryCard(
             value,
             color = valueColor,
             fontFamily = JetBrainsMonoFont,
-            fontSize = 13.sp,
+            fontSize = 11.5.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
         )
@@ -1864,43 +1888,38 @@ private fun SettingsScreen(
     onRouteChange: (String) -> Unit,
     protocols: Set<String>,
     onProtocolsChange: (Set<String>) -> Unit,
+    batteryOptimizationIgnored: Boolean,
+    onToggleBatteryOptimization: (Boolean) -> Unit,
     onOpenVpnSettings: () -> Unit,
     onExport: () -> Unit,
 ) {
-    var dnsMenu by rememberSaveable { mutableStateOf(false) }
-
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionTitle("NETWORK & ROUTING")
-        MetalPanel {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SettingRow("Android VPN Lockdown", "Always-on VPN & block non-VPN traffic") {
-                    SecondaryActionButton(label = "OPEN", onClick = onOpenVpnSettings)
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        SectionTitle("TUNNEL & PROTOCOL MATRIX")
+        MetalPanel(compact = true) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "DNS RESOLVER",
+                        color = NetconColors.TextSecondary,
+                        fontFamily = JetBrainsMonoFont,
+                        fontSize = 9.5.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        dns,
+                        color = CyanGauge,
+                        fontFamily = JetBrainsMonoFont,
+                        fontSize = 9.5.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
-
-                Box(Modifier.fillMaxWidth().height(1.dp).background(NetconColors.BevelBorder))
-
-                SettingRow("DNS Resolver", "Active upstream DNS: $dns") {
-                    Box {
-                        SecondaryActionButton(label = "CHANGE", onClick = { dnsMenu = true })
-                        DropdownMenu(expanded = dnsMenu, onDismissRequest = { dnsMenu = false }) {
-                            listOf(
-                                "Cloudflare · 1.1.1.1" to "1.1.1.1",
-                                "Google · 8.8.8.8" to "8.8.8.8",
-                                "AdGuard · 94.140.14.14" to "94.140.14.14",
-                                "Quad9 · 9.9.9.9" to "9.9.9.9",
-                            ).forEach { (label, address) ->
-                                DropdownMenuItem(
-                                    text = { Text(label) },
-                                    onClick = {
-                                        onDnsChange(address)
-                                        dnsMenu = false
-                                    },
-                                )
-                            }
-                        }
-                    }
-                }
-
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     listOf("1.1.1.1", "8.8.8.8", "94.140.14.14", "9.9.9.9").forEach { addr ->
                         Keycap(
@@ -1917,12 +1936,12 @@ private fun SettingsScreen(
                     "ALLOWED PROTOCOLS",
                     color = NetconColors.TextSecondary,
                     fontFamily = JetBrainsMonoFont,
-                    fontSize = 10.sp,
+                    fontSize = 9.5.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     listOf(
                         "VLESS" to "vless",
@@ -1931,23 +1950,35 @@ private fun SettingsScreen(
                         "SS" to "shadowsocks",
                     ).forEach { (name, id) ->
                         val checked = id in protocols
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .heightIn(min = 36.dp)
+                                .clip(RoundedCornerShape(7.dp))
+                                .background(
+                                    if (checked) GoldAccent.copy(alpha = 0.2f) else Color(0xFF0D1722),
+                                )
+                                .border(
+                                    1.dp,
+                                    if (checked) GoldText else Color(0xFF2C3E52),
+                                    RoundedCornerShape(7.dp),
+                                )
+                                .clickable {
+                                    onProtocolsChange(if (checked) protocols - id else protocols + id)
+                                }
+                                .padding(horizontal = 6.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
                         ) {
-                            Switch(
-                                checked = checked,
-                                onCheckedChange = { enabled ->
-                                    onProtocolsChange(if (enabled) protocols + id else protocols - id)
-                                },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color(0xFF1D0E05),
-                                    checkedTrackColor = GoldAccent,
-                                    uncheckedThumbColor = NetconColors.TextSecondary,
-                                    uncheckedTrackColor = NetconColors.ChassisDark,
-                                    uncheckedBorderColor = NetconColors.BevelBorder,
-                                ),
+                            Box(
+                                Modifier
+                                    .size(6.dp)
+                                    .background(
+                                        if (checked) EmeraldOnline else Color(0xFF475569),
+                                        CircleShape,
+                                    ),
                             )
+                            Spacer(Modifier.width(5.dp))
                             Text(
                                 name,
                                 color = if (checked) NetconColors.CopperLight else NetconColors.TextMuted,
@@ -1965,7 +1996,7 @@ private fun SettingsScreen(
                     "ROUTING MODE",
                     color = NetconColors.TextSecondary,
                     fontFamily = JetBrainsMonoFont,
-                    fontSize = 10.sp,
+                    fontSize = 9.5.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -1980,93 +2011,136 @@ private fun SettingsScreen(
             }
         }
 
-        CopperButton(
-            label = "EXPORT XRAY / V2RAY JSON",
-            icon = Icons.Filled.ContentCopy,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("export_json_button"),
-            onClick = onExport,
-        )
-        TextButton(
-            onClick = onOpenVpnSettings,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        ) {
-            Text(
-                "OPEN ANDROID VPN SETTINGS",
-                color = DarkInk,
-                fontFamily = JetBrainsMonoFont,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-            )
+        SectionTitle("BACKGROUND TUNNEL SURVIVABILITY")
+        MetalPanel(compact = true) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "VPNSERVICE POWER EXEMPTION",
+                        color = NetconColors.TextSecondary,
+                        fontFamily = JetBrainsMonoFont,
+                        fontSize = 9.5.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    val badgeColor = if (batteryOptimizationIgnored) EmeraldOnline else GoldText
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(badgeColor.copy(alpha = 0.14f))
+                            .border(1.dp, badgeColor.copy(alpha = 0.55f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 7.dp, vertical = 2.dp),
+                    ) {
+                        Text(
+                            if (batteryOptimizationIgnored) "UNRESTRICTED" else "OPTIMIZED",
+                            color = badgeColor,
+                            fontFamily = JetBrainsMonoFont,
+                            fontSize = 8.5.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            "Battery Optimization Ignore",
+                            color = NetconColors.TextPrimary,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            if (batteryOptimizationIgnored) {
+                                "NetconVpnService (:vpn) protected from Doze"
+                            } else {
+                                "Prevent Android from killing background tunnel"
+                            },
+                            color = NetconColors.TextSecondary,
+                            fontSize = 10.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Switch(
+                        checked = batteryOptimizationIgnored,
+                        onCheckedChange = onToggleBatteryOptimization,
+                        modifier = Modifier.testTag("battery_optimization_switch"),
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color(0xFF1D0E05),
+                            checkedTrackColor = EmeraldOnline,
+                            uncheckedThumbColor = NetconColors.TextSecondary,
+                            uncheckedTrackColor = NetconColors.ChassisDark,
+                            uncheckedBorderColor = NetconColors.BevelBorder,
+                        ),
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    CompactMetricTile(
+                        label = "TARGET SERVICE",
+                        value = "NetconVpnService (:vpn)",
+                        modifier = Modifier.weight(1f),
+                    )
+                    CompactMetricTile(
+                        label = "DOZE GUARD",
+                        value = if (batteryOptimizationIgnored) "IGNORE ACTIVE" else "SYSTEM MANAGED",
+                        valueColor = if (batteryOptimizationIgnored) EmeraldOnline else GoldText,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                Box(Modifier.fillMaxWidth().height(1.dp).background(NetconColors.BevelBorder))
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            "Android VPN Lockdown",
+                            color = NetconColors.TextPrimary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            "Always-on VPN & block non-VPN traffic",
+                            color = NetconColors.TextSecondary,
+                            fontSize = 10.sp,
+                        )
+                    }
+                    SecondaryActionButton(label = "OPEN", onClick = onOpenVpnSettings)
+                }
+            }
         }
-    }
-}
 
-@Composable
-private fun TrialLicenseStatusBar(
-    licenseStatus: NetconLicenseManager.LicenseStatus,
-    onOpenLicenseDialog: () -> Unit,
-) {
-    val isLicensed = licenseStatus.isLicensed
-    val isFrozen = licenseStatus.isFrozen
-    val borderColor = when {
-        isLicensed -> EmeraldOnline
-        isFrozen -> Color(0xFFEF4444)
-        else -> GoldText
-    }
-    val dotColor = borderColor
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(Color(0xFF0A111A))
-            .border(1.dp, borderColor.copy(alpha = 0.55f), RoundedCornerShape(10.dp))
-            .testTag("trial_license_bar")
-            .clickable { onOpenLicenseDialog() }
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.weight(1f),
         ) {
-            Box(
-                Modifier
-                    .size(7.dp)
-                    .clip(CircleShape)
-                    .background(dotColor),
+            CopperButton(
+                label = "EXPORT JSON",
+                icon = Icons.Filled.ContentCopy,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("export_json_button"),
+                onClick = onExport,
             )
-            Text(
-                text = licenseStatus.badgeSummary(),
-                color = if (isFrozen) Color(0xFFFCA5A5) else Color(0xFFF1F5F9),
-                fontFamily = JetBrainsMonoFont,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(6.dp))
-                .background(if (isLicensed) Color(0xFF102A22) else GoldAccent.copy(alpha = 0.22f))
-                .border(
-                    1.dp,
-                    if (isLicensed) EmeraldOnline.copy(alpha = 0.6f) else GoldText.copy(alpha = 0.7f),
-                    RoundedCornerShape(6.dp),
-                )
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-        ) {
-            Text(
-                text = if (isLicensed) "LICENSED" else "ACTIVATE KEY",
-                color = if (isLicensed) Color(0xFF4ADE80) else GoldText,
-                fontFamily = JetBrainsMonoFont,
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Bold,
+            SecondaryActionButton(
+                label = "VPN SETTINGS",
+                modifier = Modifier.weight(1f),
+                onClick = onOpenVpnSettings,
             )
         }
     }
@@ -2354,120 +2428,141 @@ private fun InfoScreen(
     onResetTrialWindow: () -> Unit,
     onOpenVpnSettings: () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionTitle("LICENSE & 1-KEY-PER-ACCOUNT ENFORCEMENT")
-        MetalPanel {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                InfoRow("License State", licenseStatus.state.name)
-                InfoRow("Trial Countdown", licenseStatus.formatRemainingCountdown())
-                InfoRow("Server Access", if (licenseStatus.isAccessAllowed) "ALLOWED" else "FROZEN · REFUSED")
-                InfoRow("Account Binding", "1 Key = 1 Account (HMAC-SHA256)")
-                if (licenseStatus.isLicensed) {
-                    InfoRow("Bound Account", licenseStatus.activatedAccount)
-                    InfoRow("Activated Key", licenseStatus.activatedKeyMasked)
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        SectionTitle("LICENSE & 1-KEY-PER-ACCOUNT")
+        MetalPanel(compact = true) {
+            Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    CompactMetricTile(
+                        label = "STATE",
+                        value = licenseStatus.state.name,
+                        valueColor = if (licenseStatus.isLicensed) EmeraldOnline else GoldText,
+                        modifier = Modifier.weight(1f),
+                    )
+                    CompactMetricTile(
+                        label = "COUNTDOWN",
+                        value = licenseStatus.formatRemainingCountdown(),
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    CompactMetricTile(
+                        label = "SERVER ACCESS",
+                        value = if (licenseStatus.isAccessAllowed) "ALLOWED" else "FROZEN · REFUSED",
+                        valueColor = if (licenseStatus.isAccessAllowed) Color(0xFF22FF88) else Color(0xFFF87171),
+                        modifier = Modifier.weight(1f),
+                    )
+                    CompactMetricTile(
+                        label = if (licenseStatus.isLicensed) "BOUND ACCOUNT" else "BINDING RULE",
+                        value = if (licenseStatus.isLicensed) licenseStatus.activatedAccount else "1 Key = 1 Account",
+                        valueColor = CyanGauge,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
                 Text(
-                    "Issue a single-account key via CLI: bash scripts/manage-keystore.sh generate-license-key <customer@email.com>",
+                    "CLI: bash scripts/manage-keystore.sh generate-license-key <email>",
                     color = NetconColors.TextSecondary,
                     fontFamily = JetBrainsMonoFont,
-                    fontSize = 9.5.sp,
+                    fontSize = 8.5.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     CopperButton(
-                        label = "ENTER LICENSE KEY",
+                        label = "ACTIVATE KEY",
                         modifier = Modifier.weight(1f),
                         onClick = onOpenLicenseDialog,
                     )
                     SecondaryActionButton(
-                        label = "SIMULATE EXPIRED",
+                        label = "TEST FREEZE",
                         modifier = Modifier.weight(1f),
                         onClick = { onSimulateTrialExpired(true) },
                     )
                 }
-                SecondaryActionButton(
-                    label = "RESET 3-DAY (72H) FREE TRIAL",
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = onResetTrialWindow,
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SecondaryActionButton(
+                        label = "RESET 3D TRIAL",
+                        modifier = Modifier.weight(1f),
+                        onClick = onResetTrialWindow,
+                    )
+                    SecondaryActionButton(
+                        label = "SYSTEM VPN",
+                        modifier = Modifier.weight(1f),
+                        onClick = onOpenVpnSettings,
+                    )
+                }
             }
         }
 
-        SectionTitle("GITHUB RELEASE & KEYSTORE SIGNING")
-        MetalPanel {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                InfoRow("Workflow", ".github/workflows/release-apk.yml")
-                InfoRow("Keystore Manager", "scripts/manage-keystore.sh")
-                InfoRow("Signing Alias", "upload (my-upload-key.jks)")
-                InfoRow("Env Secrets", "KEYSTORE_BASE64 · STORE_PASSWORD · KEY_PASSWORD")
-                Text(
-                    "Push any v* git tag (e.g. v1.0.5) or trigger the GitHub Actions workflow to build, sign, verify, and publish the release APK + SHA-256 checksum to GitHub Releases.",
-                    color = NetconColors.TextSecondary,
-                    fontSize = 11.sp,
-                )
+        SectionTitle("CORE TELEMETRY & RELEASE BUILD")
+        MetalPanel(compact = true) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    CompactMetricTile(
+                        label = "CORE ENGINE",
+                        value = "Xray V1.8.16",
+                        modifier = Modifier.weight(1f),
+                    )
+                    CompactMetricTile(
+                        label = "APP VERSION",
+                        value = BuildConfig.VERSION_NAME,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    CompactMetricTile(
+                        label = "TUNNEL STATUS",
+                        value = "${state.uppercase(Locale.ROOT)} · ${protocol.ifBlank { "FREEDOM" }}",
+                        modifier = Modifier.weight(1f),
+                    )
+                    CompactMetricTile(
+                        label = "ACTIVE NODE",
+                        value = serverName.ifBlank { "—" },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    CompactMetricTile(
+                        label = "RELEASE CI",
+                        value = "release-apk.yml",
+                        modifier = Modifier.weight(1f),
+                    )
+                    CompactMetricTile(
+                        label = "SIGNING KEY",
+                        value = "upload (.jks)",
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
 
-        SectionTitle("DEVICE & CORE TELEMETRY")
-        MetalPanel {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                InfoRow("Engine", "Copper Compass · Xray V1.8.16")
-                InfoRow("App Version", BuildConfig.VERSION_NAME)
-                InfoRow("Tunnel Service", "${state.uppercase(Locale.ROOT)} · Xray")
-                InfoRow("Active Protocol", protocol.ifBlank { "—" })
-                InfoRow("Active Node", serverName.ifBlank { "—" })
-                InfoRow("Config Storage", "Device Private Preferences")
-            }
-        }
-        MetalPanel {
+        MetalPanel(compact = true) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
                     Icons.Filled.Lock,
                     contentDescription = null,
                     tint = GoldText,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(18.dp),
                 )
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        "ZERO-LOG & DATA SAFETY",
+                        "ZERO-LOG & LOCAL-ONLY STORAGE",
                         color = NetconColors.CopperLight,
-                        fontSize = 13.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        "Configuration links are parsed locally and saved in private app preferences. No telemetry or advertising SDK is included.",
-                        color = NetconColors.TextPrimary,
-                        fontSize = 12.sp,
-                    )
-                    Text(
-                        "VPN routing is powered by Android VpnService and the bundled Xray core. Always verify IP and DNS leak behavior on a physical device.",
+                        "Configs & license bindings remain in device-private storage with Android VpnService routing and zero ads or telemetry SDKs.",
                         color = NetconColors.TextSecondary,
-                        fontSize = 11.sp,
-                    )
-                }
-            }
-        }
-        MetalPanel {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    "ANDROID SYSTEM VPN",
-                    color = NetconColors.CopperLight,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    "Configure Always-on VPN and Block connections without VPN inside Android system settings.",
-                    color = NetconColors.TextSecondary,
-                    fontSize = 11.sp,
-                )
-                TextButton(onClick = onOpenVpnSettings) {
-                    Text(
-                        "OPEN SYSTEM SETTINGS",
-                        color = NetconColors.CopperLight,
-                        fontFamily = JetBrainsMonoFont,
-                        fontSize = 11.sp,
+                        fontSize = 9.5.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
@@ -2709,18 +2804,57 @@ private fun PublicServerDialog(
 }
 
 @Composable
-private fun MetalPanel(content: @Composable () -> Unit) {
+private fun CompactMetricTile(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    valueColor: Color = NetconColors.TextPrimary,
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(7.dp))
+            .background(Color(0xFF070C14))
+            .border(1.dp, Color(0xFF263447), RoundedCornerShape(7.dp))
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            label,
+            color = NetconColors.TextSecondary,
+            fontFamily = JetBrainsMonoFont,
+            fontSize = 7.5.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            value,
+            color = valueColor,
+            fontFamily = JetBrainsMonoFont,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun MetalPanel(
+    compact: Boolean = false,
+    content: @Composable () -> Unit,
+) {
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(11.dp))
             .background(
                 Brush.verticalGradient(
                     listOf(ServerNavyTop, ServerNavyBottom),
                 ),
             )
-            .border(1.dp, Color(0xFF2D3B50), RoundedCornerShape(12.dp))
-            .padding(14.dp),
+            .border(1.dp, Color(0xFF2D3B50), RoundedCornerShape(11.dp))
+            .padding(if (compact) 10.dp else 14.dp),
     ) {
         content()
     }
@@ -2777,7 +2911,7 @@ private fun Keycap(
 ) {
     Box(
         modifier
-            .heightIn(min = 40.dp)
+            .heightIn(min = 34.dp)
             .clip(RoundedCornerShape(7.dp))
             .background(
                 if (selected) GoldAccent.copy(alpha = 0.24f) else Color(0xFF0D1722),
@@ -2788,16 +2922,16 @@ private fun Keycap(
                 RoundedCornerShape(7.dp),
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 9.dp),
+            .padding(horizontal = 6.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             label,
             color = if (selected) NetconColors.CopperLight else NetconColors.TextSecondary,
-            fontSize = 10.sp,
+            fontSize = 9.5.sp,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
-            maxLines = 2,
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
     }
@@ -2812,7 +2946,7 @@ private fun CopperButton(
 ) {
     Row(
         modifier
-            .heightIn(min = 44.dp)
+            .heightIn(min = 38.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(
                 Brush.verticalGradient(
@@ -2821,7 +2955,7 @@ private fun CopperButton(
             )
             .border(1.dp, Color(0xFFFBE0A9).copy(alpha = 0.5f), RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {
@@ -2830,15 +2964,15 @@ private fun CopperButton(
                 imageVector = icon,
                 contentDescription = null,
                 tint = Color(0xFF1D0E05),
-                modifier = Modifier.size(15.dp),
+                modifier = Modifier.size(14.dp),
             )
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(5.dp))
         }
         Text(
             label,
             color = Color(0xFF1D0E05),
             fontFamily = JetBrainsMonoFont,
-            fontSize = 10.sp,
+            fontSize = 9.5.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
         )
@@ -2854,12 +2988,12 @@ private fun SecondaryActionButton(
 ) {
     Row(
         modifier
-            .heightIn(min = 44.dp)
+            .heightIn(min = 38.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(Color(0xFF131D2B))
             .border(1.dp, Color(0xFF3E4E68), RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {
@@ -2868,15 +3002,15 @@ private fun SecondaryActionButton(
                 imageVector = icon,
                 contentDescription = null,
                 tint = NetconColors.CopperLight,
-                modifier = Modifier.size(15.dp),
+                modifier = Modifier.size(14.dp),
             )
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(5.dp))
         }
         Text(
             label,
             color = NetconColors.TextPrimary,
             fontFamily = JetBrainsMonoFont,
-            fontSize = 10.sp,
+            fontSize = 9.5.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
         )
@@ -2889,59 +3023,10 @@ private fun SectionTitle(text: String) {
         text,
         color = DarkInk,
         fontFamily = JetBrainsMonoFont,
-        fontSize = 10.sp,
+        fontSize = 9.5.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 0.8.sp,
     )
-}
-
-@Composable
-private fun SettingRow(label: String, detail: String, control: @Composable () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                label,
-                color = NetconColors.TextPrimary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                detail,
-                color = NetconColors.TextSecondary,
-                fontSize = 11.sp,
-            )
-        }
-        Spacer(Modifier.width(10.dp))
-        Box { control() }
-    }
-}
-
-@Composable
-private fun InfoRow(label: String, value: String) {
-    Row(
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            label,
-            color = NetconColors.TextSecondary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-        )
-        Text(
-            value,
-            color = NetconColors.TextPrimary,
-            fontSize = 11.sp,
-            fontFamily = JetBrainsMonoFont,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.End,
-        )
-    }
 }
 
 private fun formatBytes(bytes: Long): String = when {

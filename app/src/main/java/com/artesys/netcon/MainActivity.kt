@@ -60,11 +60,13 @@ class MainActivity : ComponentActivity() {
             activatedKeyMasked = "",
         ),
     )
+    private var batteryOptimizationIgnored by mutableStateOf(false)
     private var feedback by mutableStateOf("")
     private var pendingConfig = ""
     private var locationCancelSignal: CancellationSignal? = null
     private lateinit var vpnPermissionLauncher: ActivityResultLauncher<Intent>
     private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
+    private lateinit var batteryOptimizationLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,6 +110,14 @@ class MainActivity : ComponentActivity() {
         userLongitude = preferences.getString("user_longitude", null)?.toDoubleOrNull()
         userLocationSource = preferences.getString("user_location_source", "").orEmpty()
         licenseStatus = NetconLicenseManager.evaluateStatus(this)
+
+        batteryOptimizationIgnored = BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this)
+
+        batteryOptimizationLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+        ) {
+            refreshBatteryOptimizationStatus()
+        }
 
         vpnPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult(),
@@ -169,6 +179,10 @@ class MainActivity : ComponentActivity() {
                     onStartConfigured = { dnsAddress, routingMode ->
                         requestVpnConnection(configuredXrayJson(savedConfig, dnsAddress, routingMode))
                     },
+                    batteryOptimizationIgnored = batteryOptimizationIgnored,
+                    onToggleBatteryOptimization = { requestIgnore ->
+                        toggleBatteryOptimization(requestIgnore)
+                    },
                     onOpenVpnSettings = {
                         try {
                             startActivity(Intent("android.net.vpn.SETTINGS"))
@@ -197,6 +211,11 @@ class MainActivity : ComponentActivity() {
         requestAutomaticUserLocation(autoTriggered = true)
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshBatteryOptimizationStatus()
+    }
+
     override fun onDestroy() {
         locationCancelSignal?.cancel()
         locationCancelSignal = null
@@ -205,6 +224,32 @@ class MainActivity : ComponentActivity() {
             receiverRegistered = false
         }
         super.onDestroy()
+    }
+
+    private fun refreshBatteryOptimizationStatus() {
+        batteryOptimizationIgnored = BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this)
+    }
+
+    private fun toggleBatteryOptimization(requestIgnore: Boolean) {
+        val currentlyIgnored = BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this)
+        batteryOptimizationIgnored = currentlyIgnored
+        val primaryIntent = BatteryOptimizationHelper.buildToggleIntent(this, currentlyIgnored)
+        if (!requestIgnore && currentlyIgnored) {
+            feedback = "Disable unrestricted battery optimization for Netcon in Android System Settings."
+        }
+        try {
+            batteryOptimizationLauncher.launch(primaryIntent)
+        } catch (_: Exception) {
+            try {
+                batteryOptimizationLauncher.launch(BatteryOptimizationHelper.buildSettingsListIntent())
+            } catch (_: Exception) {
+                try {
+                    batteryOptimizationLauncher.launch(BatteryOptimizationHelper.buildFallbackSettingsIntent(this))
+                } catch (_: Exception) {
+                    feedback = "Unable to open Android Battery Optimization settings on this device."
+                }
+            }
+        }
     }
 
     private fun hasFineLocationPermission(): Boolean =

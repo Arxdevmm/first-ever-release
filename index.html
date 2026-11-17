@@ -38,7 +38,9 @@
       body {
         margin: 0;
         padding: 0;
-        min-height: 100vh;
+        height: 100dvh;
+        max-height: 100dvh;
+        overflow: hidden;
         font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
         background: linear-gradient(180deg, #d5dce2 0%, #bdc6cf 52%, #a7b1bc 100%);
         color: #1f2730;
@@ -84,150 +86,129 @@
         position: relative;
         z-index: 1;
         max-width: 600px;
-        margin: 0 auto;
-        padding: 12px 12px 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .logo-card {
-        width: 100%;
-        border-radius: 14px;
-        padding: 6px;
-        border: 1.5px solid #f3f6f9;
-        box-shadow: 0 3px 10px rgba(15, 23, 35, 0.14);
-        background: linear-gradient(180deg, #f1f5f8 0%, #d6dee6 55%, #b7c2ce 100%);
-      }
-
-      .logo-card-inner {
-        position: relative;
-        width: 100%;
-        border-radius: 10px;
-        border: 1px solid #2e3e54;
-        background:
-          radial-gradient(circle at 24% 50%, rgba(217, 130, 43, 0.22) 0%, transparent 62%),
-          radial-gradient(circle at 82% 35%, rgba(56, 189, 248, 0.14) 0%, transparent 56%),
-          linear-gradient(135deg, #0a1018 0%, #131e2e 52%, #0b121c 100%);
-        padding: 15px 28px 13px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 7px;
+        height: 100dvh;
+        max-height: 100dvh;
         overflow: hidden;
-      }
-
-      .logo-card-brand {
-        height: 42px;
-        max-width: 78%;
-        width: auto;
-        object-fit: contain;
-        display: block;
-        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
-      }
-
-      .logo-card-kicker {
-        display: inline-flex;
-        align-items: center;
+        margin: 0 auto;
+        padding: 6px 10px;
+        display: flex;
+        flex-direction: column;
         gap: 7px;
-        color: #e2e8f0;
-        font-size: 9.5px;
-        font-weight: 700;
-        letter-spacing: 0.9px;
       }
 
-      .logo-card-sub {
-        color: #94a3b8;
-        font-size: 8px;
-        letter-spacing: 0.5px;
-      }
-
-      .corner-screw {
-        position: absolute;
-        width: 13px;
-        height: 13px;
-        border-radius: 999px;
-        background: radial-gradient(circle at 35% 35%, #eff3f6 0%, #8c96a0 100%);
-        border: 1px solid #5d6670;
-        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6);
-      }
-
-      .corner-screw::after {
-        content: "";
-        position: absolute;
-        left: 2px;
-        right: 2px;
-        top: 50%;
-        height: 1.4px;
-        background: #3e464f;
-        transform: translateY(-50%) rotate(var(--screw-rot, 24deg));
-      }
-
-      .nav-row {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+      .unified-header {
+        height: 44px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        border: 1.2px solid #2e3e54;
+        background: linear-gradient(135deg, #0a1018 0%, #131e2e 52%, #0b121c 100%);
+        padding: 0 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         gap: 8px;
       }
 
+      .unified-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .logo-card-brand {
+        height: 20px;
+        width: auto;
+        object-fit: contain;
+        display: block;
+      }
+
+      .proto-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 5px;
+        background: #060b12;
+        border: 1px solid #273649;
+        padding: 3px 6px;
+        font-size: 8px;
+        font-weight: 700;
+        color: #cbd5e1;
+        white-space: nowrap;
+      }
+
+      .tab-viewport {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .nav-row {
+        height: 52px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        border: 1px solid #2e3e54;
+        background: linear-gradient(180deg, #141c27 0%, #0a1017 100%);
+        padding: 4px 6px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+
       .nav-tab {
-        min-height: 48px;
-        border-radius: 10px;
-        border: 1px solid #9ea7b2;
-        background: linear-gradient(180deg, #d8dfe6 0%, #bfc8d1 100%);
-        color: #47525e;
+        height: 100%;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: #94a3b8;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 7px;
+        gap: 5px;
         cursor: pointer;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 700;
-        letter-spacing: 0.6px;
-        transition: filter 140ms ease, transform 100ms ease;
+        letter-spacing: 0.5px;
+        transition: all 140ms ease;
         user-select: none;
       }
 
       .nav-tab:hover {
-        filter: brightness(1.03);
-      }
-
-      .nav-tab:active {
-        transform: scale(0.99);
+        color: #e2e8f0;
       }
 
       .nav-tab.active {
-        border: 1.5px solid #f3f6f9;
-        background: linear-gradient(180deg, #f3f6f9 0%, #d5dce3 100%);
-        color: #1f2730;
-        box-shadow: 0 2px 5px rgba(15, 23, 35, 0.08);
+        border: 1px solid rgba(217, 130, 43, 0.65);
+        background: #192738;
+        color: #f8fafc;
       }
 
-      .nav-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: #87929e;
+      .nav-icon {
+        width: 15px;
+        height: 15px;
+        fill: currentColor;
+        color: #94a3b8;
       }
 
-      .nav-tab.active .nav-dot {
-        background: #10b981;
+      .nav-tab.active .nav-icon {
+        color: #f5a623;
       }
 
       .silver-card {
         position: relative;
-        border-radius: 14px;
+        flex-shrink: 0;
+        border-radius: 12px;
         background:
           radial-gradient(circle at 50% 0%, rgba(34, 255, 136, 0.07) 0%, transparent 62%),
           linear-gradient(180deg, #141c27 0%, #0b1119 58%, #070b10 100%);
-        border: 1.5px solid #334459;
-        box-shadow:
-          inset 0 1px 0 rgba(148, 163, 184, 0.16),
-          0 8px 20px rgba(2, 6, 12, 0.45);
-        padding: 14px 12px;
+        border: 1.2px solid #334459;
+        box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.14);
+        padding: 8px 10px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 6px;
       }
 
       .telemetry-header {
@@ -238,29 +219,20 @@
       }
 
       .telemetry-title {
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 700;
-        letter-spacing: 0.8px;
+        letter-spacing: 0.7px;
         color: #22ff88;
-        text-shadow: 0 0 8px rgba(34, 255, 136, 0.28);
-      }
-
-      .telemetry-subtitle {
-        font-size: 7.5px;
-        font-weight: 700;
-        letter-spacing: 0.6px;
-        color: #64748b;
-        margin-top: 2px;
       }
 
       .status-pill {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        padding: 5px 10px;
+        gap: 5px;
+        padding: 3px 8px;
         border-radius: 999px;
         border: 1px solid rgba(148, 163, 184, 0.35);
-        font-size: 9px;
+        font-size: 8.5px;
         font-weight: 700;
         letter-spacing: 0.5px;
         transition: all 180ms ease;
@@ -268,8 +240,8 @@
 
       .status-pill-dot {
         position: relative;
-        width: 7px;
-        height: 7px;
+        width: 6px;
+        height: 6px;
         border-radius: 999px;
         flex-shrink: 0;
         transition: background-color 180ms ease, box-shadow 180ms ease;
@@ -278,9 +250,9 @@
       .status-pill-dot::after {
         content: "";
         position: absolute;
-        inset: -4px;
+        inset: -3px;
         border-radius: 999px;
-        border: 1.4px solid transparent;
+        border: 1.2px solid transparent;
         opacity: 0;
         pointer-events: none;
       }
@@ -365,13 +337,14 @@
       }
 
       .gauges-row {
-        display: grid;
-        grid-template-columns: 1fr 1.12fr 1fr;
-        gap: 6px;
+        display: flex;
+        justify-content: space-evenly;
         align-items: center;
+        gap: 6px;
       }
 
       .gauge-col {
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -381,7 +354,7 @@
       .gauge-box {
         position: relative;
         width: 100%;
-        max-width: 150px;
+        max-width: 92px;
         aspect-ratio: 1 / 1;
       }
 
@@ -401,7 +374,7 @@
       }
 
       .gauge-top-label {
-        font-size: 7.5px;
+        font-size: 7px;
         font-weight: 700;
         letter-spacing: 0.5px;
         color: #22ff88;
@@ -411,28 +384,21 @@
         border-radius: 4px;
         background: rgba(3, 8, 12, 0.88);
         border: 1px solid rgba(34, 255, 136, 0.42);
-        padding: 2px 6px;
+        padding: 1.5px 5px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
       }
 
       .gauge-val {
-        font-size: 14px;
+        font-size: 12px;
         font-weight: 700;
         line-height: 1.05;
       }
 
-      .gauge-sub-label {
-        font-size: 6.5px;
-        font-weight: 700;
-        letter-spacing: 0.4px;
-        margin-top: 2px;
-      }
-
       .gauge-bottom-label {
-        margin-top: 5px;
-        font-size: 9px;
+        margin-top: 3px;
+        font-size: 8px;
         font-weight: 700;
         letter-spacing: 0.6px;
         color: #e2e8f0;
@@ -441,14 +407,14 @@
       .chassis-btn {
         position: relative;
         width: 100%;
-        max-width: 164px;
+        max-width: 102px;
         aspect-ratio: 1 / 1;
         border-radius: 999px;
-        padding: 6px;
+        padding: 5px;
         border: 1.5px solid rgba(56, 189, 248, 0.55);
         background: radial-gradient(circle at 40% 35%, #2e3d52 0%, #182230 58%, #0a1017 100%);
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(2, 6, 12, 0.45);
+        box-shadow: 0 4px 10px rgba(2, 6, 12, 0.45);
         transition: transform 120ms ease, border-color 180ms ease;
       }
 
@@ -460,7 +426,7 @@
         width: 100%;
         height: 100%;
         border-radius: 999px;
-        border: 1.8px solid rgba(56, 189, 248, 0.45);
+        border: 1.5px solid rgba(56, 189, 248, 0.45);
         background: radial-gradient(circle, #08131c 0%, #03070b 100%);
         display: flex;
         flex-direction: column;
@@ -474,13 +440,13 @@
       .chassis-inner.connected {
         border-color: #22ff88;
         background: radial-gradient(circle, #07291e 0%, #03070b 100%);
-        box-shadow: inset 0 0 16px rgba(34, 255, 136, 0.22);
+        box-shadow: inset 0 0 14px rgba(34, 255, 136, 0.22);
       }
 
       .chassis-inner.connecting {
         border-color: #f5a623;
         background: radial-gradient(circle, #261c0a 0%, #03070b 100%);
-        box-shadow: inset 0 0 14px rgba(245, 166, 35, 0.2);
+        box-shadow: inset 0 0 12px rgba(245, 166, 35, 0.2);
       }
 
       .chassis-inner.error {
@@ -518,14 +484,14 @@
       .oled-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 8px;
       }
 
       .oled-card {
-        border-radius: 9px;
+        border-radius: 7px;
         background: #04090e;
-        border: 1.2px solid rgba(34, 255, 136, 0.38);
-        padding: 9px 11px;
+        border: 1px solid rgba(34, 255, 136, 0.38);
+        padding: 5px 9px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -538,24 +504,18 @@
         color: #94a3b8;
       }
 
-      .oled-sublabel {
-        font-size: 8px;
-        font-weight: 700;
-        margin-top: 2px;
-      }
-
       .oled-value {
-        font-size: 13px;
+        font-size: 11.5px;
         font-weight: 700;
       }
 
       .error-banner {
-        border-radius: 8px;
+        border-radius: 7px;
         background: #331418;
         border: 1px solid #ef4444;
-        padding: 8px 10px;
+        padding: 5px 8px;
         color: #fca5a5;
-        font-size: 11px;
+        font-size: 10px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -564,20 +524,21 @@
       }
 
       .server-card {
-        border-radius: 14px;
+        flex-shrink: 0;
+        border-radius: 11px;
         background: linear-gradient(180deg, #131d2d 0%, #0b111c 100%);
         border: 1px solid #29384d;
-        padding: 13px 14px;
+        padding: 8px 10px;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 9px;
         cursor: pointer;
       }
 
       .flag-badge {
-        width: 44px;
-        height: 34px;
-        border-radius: 7px;
+        width: 38px;
+        height: 28px;
+        border-radius: 6px;
         background: #172233;
         border: 1px solid #394b66;
         display: flex;
@@ -585,7 +546,7 @@
         justify-content: center;
         flex-shrink: 0;
         overflow: hidden;
-        padding: 3px;
+        padding: 2px;
       }
 
       .server-info {
@@ -593,7 +554,7 @@
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 2px;
       }
 
       .server-name-row {
@@ -604,7 +565,7 @@
 
       .server-name {
         color: #f8fafc;
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 700;
         white-space: nowrap;
         overflow: hidden;
@@ -613,65 +574,45 @@
 
       .server-meta {
         color: #38bdf8;
-        font-size: 9.5px;
+        font-size: 8.5px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
       .switch-btn {
-        min-height: 42px;
-        border-radius: 9px;
+        min-height: 32px;
+        border-radius: 8px;
         background: linear-gradient(180deg, #1f2b3d 0%, #131b28 100%);
         border: 1px solid #3e4e68;
-        padding: 9px 13px;
+        padding: 6px 10px;
         color: #e2e8f0;
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: 3px;
         cursor: pointer;
         flex-shrink: 0;
       }
 
       .map-card {
-        border-radius: 14px;
+        flex: 1;
+        min-height: 120px;
+        border-radius: 12px;
         background: linear-gradient(180deg, #dce2e8 0%, #b3bcc5 55%, #939ca6 100%);
         border: 1.5px solid #e9eef2;
-        padding: 11px;
+        padding: 6px;
         display: flex;
         flex-direction: column;
-        gap: 8px;
-      }
-
-      .map-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .map-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .map-link-btn {
-        background: transparent;
-        border: none;
-        padding: 4px 6px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: 700;
-        cursor: pointer;
       }
 
       .map-viewport {
         position: relative;
         width: 100%;
-        aspect-ratio: 1.55 / 1;
-        border-radius: 10px;
+        flex: 1;
+        min-height: 0;
+        border-radius: 9px;
         background: radial-gradient(circle, #0e1522 0%, #0a0f17 100%);
         border: 1.5px solid #444e5a;
         overflow: hidden;
@@ -692,34 +633,43 @@
 
       .map-regions-chip {
         position: absolute;
-        top: 8px;
-        left: 8px;
+        top: 6px;
+        left: 6px;
         border-radius: 6px;
-        background: rgba(7, 9, 13, 0.82);
-        border: 1px solid rgba(49, 59, 75, 0.8);
-        padding: 4px 8px;
+        background: rgba(7, 9, 13, 0.85);
+        border: 1px solid rgba(49, 59, 75, 0.85);
+        padding: 4px 7px;
         display: flex;
         align-items: center;
         gap: 5px;
-        font-size: 9px;
+        font-size: 8.5px;
         font-weight: 700;
         color: #f1f5f9;
         pointer-events: none;
       }
 
       .map-hud-btn {
-        width: 34px;
-        height: 34px;
+        width: 30px;
+        height: 30px;
         border-radius: 7px;
-        background: rgba(7, 9, 13, 0.85);
-        border: 1px solid rgba(71, 84, 105, 0.7);
+        background: rgba(7, 9, 13, 0.86);
+        border: 1px solid rgba(71, 84, 105, 0.75);
         color: #f0c99e;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
+      }
+
+      .map-hud-row {
+        position: absolute;
+        bottom: 6px;
+        right: 6px;
+        display: flex;
+        flex-direction: row;
+        gap: 4px;
       }
 
       .map-hud-stack {
@@ -733,63 +683,70 @@
 
       .map-hub-popup {
         position: absolute;
-        bottom: 8px;
-        left: 8px;
+        bottom: 6px;
+        left: 6px;
         border-radius: 8px;
         background: rgba(7, 9, 13, 0.92);
         border: 1px solid #d97d48;
-        padding: 7px 10px;
+        padding: 5px 8px;
         display: flex;
         align-items: center;
         gap: 8px;
+        z-index: 4;
       }
 
-      .map-readout-bar {
-        border-radius: 8px;
-        background: #0a1017;
-        border: 1px solid #47525e;
-        padding: 8px 11px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
+      .map-coord-pill {
+        position: absolute;
+        bottom: 6px;
+        left: 6px;
+        max-width: 55%;
+        border-radius: 6px;
+        background: rgba(7, 9, 13, 0.84);
+        border: 1px solid rgba(71, 84, 105, 0.75);
+        padding: 4px 7px;
+        font-size: 8px;
+        font-weight: 600;
+        color: #38bdf8;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        pointer-events: none;
       }
 
-      .sentinel-outer {
-        border-radius: 14px;
-        background: linear-gradient(180deg, #8c9aa8 0%, #515e6b 100%);
-        border: 1.5px solid #b8c4d0;
-        padding: 4px;
-      }
-
-      .sentinel-inner {
-        position: relative;
-        border-radius: 11px;
+      .sentinel-dock {
+        flex-shrink: 0;
+        border-radius: 10px;
         background: linear-gradient(180deg, #0e212b 0%, #081219 100%);
         border: 1px solid #284357;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .sentinel-top {
+        padding: 6px 9px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 4px 14px 0;
-        gap: 8px;
+        gap: 7px;
+      }
+
+      .sentinel-ticker-btn {
+        flex: 1;
+        min-width: 0;
+        background: transparent;
+        border: none;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        text-align: left;
       }
 
       .sentinel-chip {
         border-radius: 5px;
         background: #132634;
         border: 1px solid #3a5b73;
-        padding: 5px 9px;
+        padding: 5px 8px;
         color: #e2e8f0;
-        font-size: 8.5px;
+        font-size: 8px;
         font-weight: 700;
         cursor: pointer;
+        flex-shrink: 0;
       }
 
       .sentinel-log-box {
@@ -800,7 +757,9 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
-        min-height: 76px;
+        min-height: 150px;
+        max-height: 280px;
+        overflow-y: auto;
       }
 
       .sentinel-line {
@@ -809,29 +768,15 @@
         word-break: break-word;
       }
 
-      .drawer-toggle {
-        border-radius: 7px;
-        background: #0d1d28;
-        border: 1px solid #284357;
-        padding: 8px 10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        cursor: pointer;
-        color: #e2e8f0;
-        font-size: 9.5px;
-        font-weight: 700;
-      }
-
       .recessed-input {
         width: 100%;
         border-radius: 8px;
         background: #060a10;
         border: 1px solid #2d3c50;
-        padding: 11px 12px;
+        padding: 10px 12px;
         color: #f1f5f9;
         font-family: "Space Grotesk", sans-serif;
-        font-size: 13px;
+        font-size: 12.5px;
         outline: none;
       }
 
@@ -840,18 +785,18 @@
       }
 
       .copper-btn {
-        min-height: 44px;
+        min-height: 38px;
         border-radius: 8px;
         background: linear-gradient(180deg, #f6d08a 0%, #d9822b 52%, #9c5114 100%);
         border: 1px solid rgba(251, 224, 169, 0.5);
-        padding: 10px 12px;
+        padding: 7px 10px;
         color: #1d0e05;
-        font-size: 10px;
+        font-size: 9.5px;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 5px;
         cursor: pointer;
       }
 
@@ -861,18 +806,18 @@
       }
 
       .secondary-btn {
-        min-height: 44px;
+        min-height: 38px;
         border-radius: 8px;
         background: #131d2b;
         border: 1px solid #3e4e68;
-        padding: 10px 12px;
+        padding: 7px 10px;
         color: #f1f5f9;
-        font-size: 10px;
+        font-size: 9.5px;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 5px;
         cursor: pointer;
       }
 
@@ -882,13 +827,13 @@
       }
 
       .keycap {
-        min-height: 40px;
+        min-height: 34px;
         border-radius: 7px;
         background: #0d1722;
         border: 1px solid #2c3e52;
-        padding: 9px 8px;
+        padding: 6px 6px;
         color: #94a3b8;
-        font-size: 10px;
+        font-size: 9.5px;
         font-weight: 600;
         text-align: center;
         cursor: pointer;
@@ -901,17 +846,52 @@
       }
 
       .metal-panel {
-        border-radius: 12px;
+        border-radius: 11px;
         background: linear-gradient(180deg, #131d2d 0%, #0b111c 100%);
         border: 1px solid #2d3b50;
-        padding: 14px;
+        padding: 10px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
+      }
+
+      .metric-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+
+      .metric-tile {
+        border-radius: 7px;
+        background: #070c14;
+        border: 1px solid #263447;
+        padding: 6px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .metric-tile-label {
+        font-size: 7.5px;
+        font-weight: 700;
+        color: #94a3b8;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .metric-tile-val {
+        font-size: 10px;
+        font-weight: 700;
+        color: #f1f5f9;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .section-title {
-        font-size: 10px;
+        font-size: 9.5px;
         font-weight: 700;
         letter-spacing: 0.8px;
         color: #1f2730;
@@ -943,7 +923,7 @@
         border-radius: 12px;
         background: #1a212b;
         border: 1px solid #475469;
-        padding: 16px;
+        padding: 15px;
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -962,16 +942,6 @@
         color: #f1f5f9;
       }
 
-      .footer-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 2px 4px;
-        font-size: 8.5px;
-        font-weight: 700;
-        color: #47525e;
-      }
-
       .hidden {
         display: none !important;
       }
@@ -982,409 +952,390 @@
     <div class="steel-overlay"></div>
 
     <main class="app-shell">
-      <div class="logo-card">
-        <div class="logo-card-inner">
-          <span class="corner-screw" style="top: 8px; left: 8px; --screw-rot: 22deg;"></span>
-          <span class="corner-screw" style="top: 8px; right: 8px; --screw-rot: -28deg;"></span>
-          <span class="corner-screw" style="bottom: 8px; left: 8px; --screw-rot: -18deg;"></span>
-          <span class="corner-screw" style="bottom: 8px; right: 8px; --screw-rot: 34deg;"></span>
-
+      <!-- Unified Compact Top Header Bar (Logo + Proto + License Pill) -->
+      <header class="unified-header">
+        <div class="unified-header-left">
           <img class="logo-card-brand" src="/assets/netcon_logo.png" alt="Netcon logo" />
-          <div class="logo-card-kicker mono">
+          <span class="proto-chip mono">
             <span id="logo-card-dot" style="width: 6px; height: 6px; border-radius: 999px; background: #d9822b;"></span>
-            <span>PRECISION MULTI-PROTOCOL TUNNEL</span>
+            <span id="logo-card-meta">VLESS · XRAY</span>
+          </span>
+        </div>
+
+        <div id="trial-license-bar" class="mono" style="border-radius: 6px; background: rgba(245, 166, 35, 0.14); border: 1px solid rgba(245, 166, 35, 0.58); padding: 4px 8px; display: flex; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0;">
+          <span id="trial-bar-dot" style="width: 6px; height: 6px; border-radius: 999px; background: #f5a623;"></span>
+          <span id="trial-bar-text" style="font-size: 8.5px; font-weight: 700; color: #f5a623;">3D 00H</span>
+          <span id="trial-bar-badge" class="hidden">ACTIVATE KEY</span>
+        </div>
+      </header>
+
+      <!-- Zero-Scroll Main Tab Content Viewport -->
+      <div class="tab-viewport">
+        <!-- TAB 1: CONNECT -->
+        <div id="tab-connect" style="display: flex; flex-direction: column; gap: 7px; height: 100%; min-height: 0;">
+          <!-- 1. Compact F-16 Cockpit Telemetry & Power Card -->
+          <section class="silver-card">
+            <div class="telemetry-header">
+              <span class="telemetry-title mono">COCKPIT TELEMETRY</span>
+              <div id="status-pill" class="status-pill mono" style="background: rgba(148, 163, 184, 0.14); color: #94a3b8;">
+                <span id="status-pill-dot" class="status-pill-dot" style="background: #94a3b8;"></span>
+                <span id="status-pill-text">OFFLINE</span>
+              </div>
+            </div>
+
+            <div class="gauges-row">
+              <div class="gauge-col">
+                <div id="ping-gauge" class="gauge-box clickable" title="Tap to refresh handshake latency">
+                  <svg id="ping-svg" viewBox="0 0 100 100" style="width: 100%; height: 100%;"></svg>
+                  <div class="gauge-overlay">
+                    <span id="ping-top-label" class="gauge-top-label mono" style="color: #22ff88;">ms</span>
+                    <div id="ping-val-box" class="gauge-val-box" style="border-color: rgba(34, 255, 136, 0.45);">
+                      <span id="ping-val" class="gauge-val mono" style="color: #22ff88;">—</span>
+                    </div>
+                  </div>
+                </div>
+                <span class="gauge-bottom-label mono">PING</span>
+              </div>
+
+              <div class="gauge-col">
+                <button id="vpn-power-btn" type="button" class="chassis-btn" aria-label="Connect VPN">
+                  <div id="chassis-inner" class="chassis-inner">
+                    <svg class="chassis-hud-svg" viewBox="0 0 100 100">
+                      <circle id="chassis-radar-wave" class="chassis-radar-wave" cx="50" cy="50" r="24" fill="none" stroke="#22ff88" stroke-width="1.4" />
+                      <g id="chassis-pitch-ladder" stroke="#38bdf8" stroke-opacity="0.32" stroke-width="1">
+                        <line x1="14" y1="50" x2="32" y2="50" />
+                        <line x1="68" y1="50" x2="86" y2="50" />
+                        <line x1="27" y1="33" x2="39" y2="33" />
+                        <line x1="27" y1="33" x2="27" y2="36.5" />
+                        <line x1="61" y1="33" x2="73" y2="33" />
+                        <line x1="73" y1="33" x2="73" y2="36.5" />
+                        <line x1="27" y1="67" x2="39" y2="67" />
+                        <line x1="27" y1="67" x2="27" y2="63.5" />
+                        <line x1="61" y1="67" x2="73" y2="67" />
+                        <line x1="73" y1="67" x2="73" y2="63.5" />
+                      </g>
+                      <g id="chassis-lock-ring" class="chassis-lock-ring" fill="none" stroke="#38bdf8" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round">
+                        <path d="M 50 8 A 42 42 0 0 1 86.3 29" />
+                        <path d="M 92 50 A 42 42 0 0 1 71 86.3" />
+                        <path d="M 50 92 A 42 42 0 0 1 13.7 71" />
+                        <path d="M 8 50 A 42 42 0 0 1 29 13.7" />
+                      </g>
+                    </svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#38bdf8" id="chassis-bolt" style="position: relative; z-index: 1;">
+                      <path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66l.1-.16L12.5 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15L11 21z" />
+                    </svg>
+                    <span id="chassis-word" class="mono" style="position: relative; z-index: 1; font-size: 9px; font-weight: 700; letter-spacing: 0.8px; color: #38bdf8;">OFFLINE</span>
+                    <span id="chassis-duration" class="mono hidden" style="position: relative; z-index: 1; font-size: 7px; font-weight: 700; color: #e2e8f0;">00:00:00</span>
+                  </div>
+                </button>
+                <span class="gauge-bottom-label mono">STATUS</span>
+              </div>
+
+              <div class="gauge-col">
+                <div class="gauge-box">
+                  <svg id="bw-svg" viewBox="0 0 100 100" style="width: 100%; height: 100%;"></svg>
+                  <div class="gauge-overlay">
+                    <span class="gauge-top-label mono" style="color: #38bdf8;">Mbps</span>
+                    <div class="gauge-val-box" style="border-color: rgba(56, 189, 248, 0.45);">
+                      <span id="bw-val" class="gauge-val mono" style="color: #38bdf8;">0.0</span>
+                    </div>
+                  </div>
+                </div>
+                <span class="gauge-bottom-label mono">TX</span>
+              </div>
+            </div>
+
+            <div class="oled-row">
+              <div class="oled-card" style="border-color: rgba(34, 255, 136, 0.42);">
+                <span class="oled-label mono">RX</span>
+                <span id="rx-val" class="oled-value mono" style="color: #22ff88;">0 B</span>
+              </div>
+              <div class="oled-card" style="border-color: rgba(56, 189, 248, 0.42);">
+                <span class="oled-label mono">TX</span>
+                <span id="tx-val" class="oled-value mono" style="color: #38bdf8;">0 B</span>
+              </div>
+            </div>
+
+            <div id="error-banner" class="error-banner hidden">
+              <span id="error-banner-text"></span>
+              <span class="mono" style="font-weight: 700;">✕</span>
+            </div>
+          </section>
+
+          <!-- 2. Compact Active Server Selector Strip -->
+          <div id="server-card" class="server-card">
+            <div id="flag-badge" class="flag-badge mono"></div>
+            <div class="server-info">
+              <div class="server-name-row">
+                <span id="server-name-text" class="server-name">SG-Cloudflare-Reality-01</span>
+                <span id="server-dot" style="width: 6px; height: 6px; border-radius: 999px; background: #d9822b; flex-shrink: 0;"></span>
+              </div>
+              <div id="server-meta-text" class="server-meta mono">VLESS-XTLS · Singapore · —</div>
+            </div>
+            <button id="switch-server-btn" type="button" class="switch-btn mono">
+              <span>SWITCH</span>
+              <span>▾</span>
+            </button>
           </div>
-          <div id="logo-card-meta" class="logo-card-sub mono">VLESS-REALITY  ·  XRAY CORE  ·  ZERO-LOG</div>
+
+          <!-- 3. Flexible Interactive World Map with Overlay HUD GPS/Zoom Controls -->
+          <section class="map-card">
+            <div id="map-viewport" class="map-viewport" title="Drag to pan · Scroll wheel or double-click up to 18×">
+              <canvas id="world-map-canvas"></canvas>
+
+              <div class="map-regions-chip mono">
+                <span id="map-chip-dot" style="width: 6px; height: 6px; border-radius: 999px; background: #d97d48;"></span>
+                <span id="map-chip-text">17 HUBS · 2.2×</span>
+              </div>
+
+              <div style="position: absolute; top: 6px; right: 6px; display: flex; align-items: center; gap: 5px;">
+                <button id="user-loc-pin-btn" type="button" class="mono" style="height: 30px; border-radius: 6px; background: rgba(7, 9, 13, 0.88); border: 1px solid rgba(56, 189, 248, 0.65); padding: 0 8px; color: #38bdf8; font-size: 8.5px; font-weight: 700; cursor: pointer;">AUTO GPS</button>
+                <button id="map-expand-hud" type="button" class="map-hud-btn" title="Open fullscreen world map">⤢</button>
+              </div>
+
+              <div id="map-coord-pill" class="map-coord-pill mono">
+                <span id="map-loc-coords">Singapore · 1.35°, 103.82°</span>
+              </div>
+
+              <div class="map-hud-row">
+                <button id="map-world-btn" type="button" class="map-hud-btn" title="Fit full world map (1×)">🌐</button>
+                <button id="map-recenter-btn" type="button" class="map-hud-btn" title="Center on active server">⌖</button>
+                <button id="map-zoom-in-btn" type="button" class="map-hud-btn" title="Zoom in (up to 18×)">+</button>
+                <button id="map-zoom-out-btn" type="button" class="map-hud-btn" title="Zoom out">−</button>
+              </div>
+
+              <div id="map-hub-popup" class="map-hub-popup hidden">
+                <div>
+                  <div id="hub-popup-title" style="font-size: 10px; font-weight: 700; color: #f1f5f9;"></div>
+                  <div id="hub-popup-city" class="mono" style="font-size: 8px; color: #94a3b8;"></div>
+                </div>
+                <button id="hub-popup-btn" type="button" class="copper-btn mono" style="min-height: 26px; padding: 4px 8px; font-size: 8.5px;">SERVERS</button>
+              </div>
+
+              <span id="map-loc-name" class="hidden">Singapore</span>
+              <span id="user-loc-coords" class="hidden">Detecting device location…</span>
+              <button id="map-full-btn" type="button" class="hidden">FULL MAP</button>
+            </div>
+          </section>
+
+          <!-- 4. Compact Sentinel Ticker + Quick Modal Tools Dock -->
+          <section class="sentinel-dock">
+            <button id="sentinel-open-btn" type="button" class="sentinel-ticker-btn">
+              <span style="font-size: 12px; color: #7dd3fc; flex-shrink: 0;">&gt;_</span>
+              <span id="sentinel-latest-line" class="mono" style="font-size: 8.5px; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">[CORE] Xray Core V1.8.16 · Copper Compass Engine ready</span>
+            </button>
+            <button id="sentinel-logs-chip" type="button" class="sentinel-chip mono">LOGS</button>
+            <button id="tools-drawer-toggle" type="button" class="copper-btn mono" style="min-height: 26px; padding: 4px 9px; font-size: 8.5px; flex-shrink: 0;">✦ TOOLS</button>
+          </section>
+        </div>
+
+        <!-- TAB 2: CONFIG -->
+        <div id="tab-config" class="hidden" style="display: flex; flex-direction: column; gap: 8px; height: 100%; overflow: hidden;">
+          <h2 class="section-title mono">TUNNEL &amp; PROTOCOL MATRIX</h2>
+          <div class="metal-panel">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span class="mono" style="font-size: 9.5px; font-weight: 700; color: #94a3b8;">DNS RESOLVER</span>
+              <span id="dns-detail-label" class="mono" style="font-size: 9.5px; font-weight: 700; color: #38bdf8;">1.1.1.1</span>
+            </div>
+            <div id="dns-keycaps" class="keycap-row" style="grid-template-columns: repeat(4, 1fr);"></div>
+
+            <div class="divider"></div>
+
+            <div class="mono" style="font-size: 9.5px; font-weight: 700; color: #94a3b8;">ALLOWED PROTOCOLS</div>
+            <div id="protocol-toggles" class="keycap-row" style="grid-template-columns: repeat(4, 1fr);"></div>
+
+            <div class="divider"></div>
+
+            <div class="mono" style="font-size: 9.5px; font-weight: 700; color: #94a3b8;">ROUTING MODE</div>
+            <div id="route-keycaps" class="keycap-row" style="grid-template-columns: repeat(3, 1fr);"></div>
+          </div>
+
+          <h2 class="section-title mono">BACKGROUND TUNNEL SURVIVABILITY</h2>
+          <div class="metal-panel">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span class="mono" style="font-size: 9.5px; font-weight: 700; color: #94a3b8;">VPNSERVICE POWER EXEMPTION</span>
+              <span id="battery-opt-badge" class="mono" style="font-size: 8.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; color: #f5a623; background: rgba(245, 166, 35, 0.14); border: 1px solid rgba(245, 166, 35, 0.55);">OPTIMIZED</span>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <div style="min-width: 0; flex: 1;">
+                <div style="font-size: 12.5px; font-weight: 600; color: #f1f5f9;">Battery Optimization Ignore</div>
+                <div id="battery-opt-detail" style="font-size: 10px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Prevent Android from killing background tunnel</div>
+              </div>
+              <button id="battery-opt-switch" type="button" role="switch" aria-checked="false" class="secondary-btn mono" style="min-width: 66px; min-height: 34px;">OFF</button>
+            </div>
+
+            <div class="metric-grid-2">
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">TARGET SERVICE</span>
+                <span class="metric-tile-val mono">NetconVpnService (:vpn)</span>
+              </div>
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">DOZE GUARD</span>
+                <span id="battery-opt-doze" class="metric-tile-val mono">SYSTEM MANAGED</span>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <div>
+                <div style="font-size: 12px; font-weight: 600; color: #f1f5f9;">Android VPN Lockdown</div>
+                <div style="font-size: 10px; color: #94a3b8;">Always-on VPN &amp; block non-VPN traffic</div>
+              </div>
+              <button id="vpn-settings-btn-1" type="button" class="secondary-btn mono" style="min-height: 34px; padding: 5px 12px;">OPEN</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button id="export-json-btn" type="button" class="copper-btn mono">EXPORT JSON</button>
+            <button id="vpn-settings-btn-2" type="button" class="secondary-btn mono">VPN SETTINGS</button>
+          </div>
+        </div>
+
+        <!-- TAB 3: INFO -->
+        <div id="tab-info" class="hidden" style="display: flex; flex-direction: column; gap: 8px; height: 100%; overflow: hidden;">
+          <h2 class="section-title mono">LICENSE &amp; 1-KEY-PER-ACCOUNT</h2>
+          <div class="metal-panel">
+            <div class="metric-grid-2">
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">STATE</span>
+                <span id="info-license-state" class="metric-tile-val mono" style="color: #f5a623;">TRIAL_ACTIVE</span>
+              </div>
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">COUNTDOWN</span>
+                <span id="info-trial-countdown" class="metric-tile-val mono">3D 00H 00M</span>
+              </div>
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">SERVER ACCESS</span>
+                <span id="info-server-access" class="metric-tile-val mono" style="color: #22ff88;">ALLOWED</span>
+              </div>
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">BINDING RULE</span>
+                <span id="info-bound-account" class="metric-tile-val mono" style="color: #38bdf8;">1 Key = 1 Account</span>
+              </div>
+            </div>
+            <div class="mono" style="font-size: 8.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              CLI: <span style="color: #f0c99e;">bash scripts/manage-keystore.sh generate-license-key &lt;email&gt;</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <button id="info-open-license-btn" type="button" class="copper-btn mono">ACTIVATE KEY</button>
+              <button id="info-simulate-expired-btn" type="button" class="secondary-btn mono">TEST FREEZE</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <button id="info-reset-trial-btn" type="button" class="secondary-btn mono">RESET 3D TRIAL</button>
+              <button id="info-system-vpn-btn" type="button" class="secondary-btn mono">SYSTEM VPN</button>
+            </div>
+          </div>
+
+          <h2 class="section-title mono">CORE TELEMETRY &amp; RELEASE BUILD</h2>
+          <div class="metal-panel">
+            <div class="metric-grid-2">
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">CORE ENGINE</span>
+                <span class="metric-tile-val mono">Xray V1.8.16</span>
+              </div>
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">APP VERSION</span>
+                <span class="metric-tile-val mono">1.0.5</span>
+              </div>
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">TUNNEL STATUS</span>
+                <span id="info-state" class="metric-tile-val mono">DISCONNECTED</span>
+              </div>
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">ACTIVE NODE</span>
+                <span id="info-node" class="metric-tile-val mono">SG-Cloudflare-Reality-01</span>
+              </div>
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">PROTOCOL</span>
+                <span id="info-proto" class="metric-tile-val mono">FREEDOM</span>
+              </div>
+              <div class="metric-tile">
+                <span class="metric-tile-label mono">SIGNING KEY</span>
+                <span class="metric-tile-val mono">upload (.jks)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="metal-panel">
+            <div style="display: flex; align-items: center; gap: 9px;">
+              <span style="font-size: 16px; color: #f5a623;">🔒</span>
+              <div>
+                <div style="font-size: 11px; font-weight: 700; color: #f0c99e;">ZERO-LOG &amp; LOCAL-ONLY STORAGE</div>
+                <div style="font-size: 9.5px; color: #94a3b8; line-height: 1.35;">
+                  Configs &amp; license bindings remain in device-private storage with Android VpnService routing and zero telemetry SDKs.
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- 3-Day Free Trial & License Status Bar -->
-      <div id="trial-license-bar" class="mono" style="border-radius: 10px; background: #0a111a; border: 1px solid rgba(245, 166, 35, 0.55); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer;">
-        <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
-          <span id="trial-bar-dot" style="width: 7px; height: 7px; border-radius: 999px; background: #f5a623; flex-shrink: 0;"></span>
-          <span id="trial-bar-text" style="font-size: 9.5px; font-weight: 700; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">FREE TRIAL · 3D 00H 00M LEFT</span>
-        </div>
-        <span id="trial-bar-badge" style="border-radius: 6px; background: rgba(217, 130, 43, 0.22); border: 1px solid rgba(245, 166, 35, 0.7); padding: 4px 8px; font-size: 8.5px; font-weight: 700; color: #f5a623; flex-shrink: 0;">ACTIVATE KEY</span>
-      </div>
-
-      <!-- Top Navigation matching DesignTwoNavigation -->
+      <!-- Fixed Native Android Bottom Navigation Bar -->
       <nav class="nav-row" aria-label="Dashboard tabs">
         <button type="button" class="nav-tab mono active" data-tab="CONNECT">
-          <span class="nav-dot"></span>
+          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66l.1-.16L12.5 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15L11 21z"/></svg>
           <span>CONNECT</span>
         </button>
         <button type="button" class="nav-tab mono" data-tab="CONFIG">
-          <span class="nav-dot"></span>
+          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
           <span>CONFIG</span>
         </button>
         <button type="button" class="nav-tab mono" data-tab="INFO">
-          <span class="nav-dot"></span>
+          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
           <span>INFO</span>
         </button>
       </nav>
-
-      <!-- TAB 1: CONNECT -->
-      <div id="tab-connect" style="display: flex; flex-direction: column; gap: 12px;">
-        <!-- 1. F-16 / F-22 Raptor MFD & HUD Telemetry Cluster -->
-        <section class="silver-card">
-          <div class="telemetry-header">
-            <span class="telemetry-title mono">TELEMETRY</span>
-            <div id="status-pill" class="status-pill mono" style="background: rgba(148, 163, 184, 0.14); color: #94a3b8;">
-              <span id="status-pill-dot" class="status-pill-dot" style="background: #94a3b8;"></span>
-              <span id="status-pill-text">OFFLINE</span>
-            </div>
-          </div>
-
-          <div class="gauges-row">
-            <!-- Left MFD: Latency Radar Gauge -->
-            <div class="gauge-col">
-              <div id="ping-gauge" class="gauge-box clickable" title="Tap to refresh handshake latency">
-                <svg id="ping-svg" viewBox="0 0 100 100" style="width: 100%; height: 100%;"></svg>
-                <div class="gauge-overlay">
-                  <span id="ping-top-label" class="gauge-top-label mono" style="color: #22ff88;">ms</span>
-                  <div id="ping-val-box" class="gauge-val-box" style="border-color: rgba(34, 255, 136, 0.45);">
-                    <span id="ping-val" class="gauge-val mono" style="color: #22ff88;">—</span>
-                  </div>
-                </div>
-              </div>
-              <span class="gauge-bottom-label mono">PING</span>
-            </div>
-
-            <!-- Center HUD: F-16 Flight Path & Pitch Ladder Connection Display -->
-            <div class="gauge-col">
-              <button id="vpn-power-btn" type="button" class="chassis-btn" aria-label="Connect VPN">
-                <div id="chassis-inner" class="chassis-inner">
-                  <svg class="chassis-hud-svg" viewBox="0 0 100 100">
-                    <circle id="chassis-radar-wave" class="chassis-radar-wave" cx="50" cy="50" r="24" fill="none" stroke="#22ff88" stroke-width="1.4" />
-                    <!-- Artificial Horizon & Pitch Ladder (+10°, 0°, -10°) -->
-                    <g id="chassis-pitch-ladder" stroke="#38bdf8" stroke-opacity="0.32" stroke-width="1">
-                      <line x1="14" y1="50" x2="32" y2="50" />
-                      <line x1="68" y1="50" x2="86" y2="50" />
-                      <line x1="27" y1="33" x2="39" y2="33" />
-                      <line x1="27" y1="33" x2="27" y2="36.5" />
-                      <line x1="61" y1="33" x2="73" y2="33" />
-                      <line x1="73" y1="33" x2="73" y2="36.5" />
-                      <line x1="27" y1="67" x2="39" y2="67" />
-                      <line x1="27" y1="67" x2="27" y2="63.5" />
-                      <line x1="61" y1="67" x2="73" y2="67" />
-                      <line x1="73" y1="67" x2="73" y2="63.5" />
-                    </g>
-                    <!-- Segmented Rotating Tactical Lock Ring -->
-                    <g id="chassis-lock-ring" class="chassis-lock-ring" fill="none" stroke="#38bdf8" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round">
-                      <path d="M 50 8 A 42 42 0 0 1 86.3 29" />
-                      <path d="M 92 50 A 42 42 0 0 1 71 86.3" />
-                      <path d="M 50 92 A 42 42 0 0 1 13.7 71" />
-                      <path d="M 8 50 A 42 42 0 0 1 29 13.7" />
-                    </g>
-                  </svg>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#38bdf8" id="chassis-bolt" style="position: relative; z-index: 1;">
-                    <path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66l.1-.16L12.5 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15L11 21z" />
-                  </svg>
-                  <span id="chassis-word" class="mono" style="position: relative; z-index: 1; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: #38bdf8;">OFFLINE</span>
-                  <span id="chassis-duration" class="mono hidden" style="position: relative; z-index: 1; font-size: 7.5px; font-weight: 700; color: #e2e8f0;">00:00:00</span>
-                </div>
-              </button>
-              <span class="gauge-bottom-label mono">STATUS</span>
-            </div>
-
-            <!-- Right MFD: TX Speed Uplink / Data-Link Gauge -->
-            <div class="gauge-col">
-              <div class="gauge-box">
-                <svg id="bw-svg" viewBox="0 0 100 100" style="width: 100%; height: 100%;"></svg>
-                <div class="gauge-overlay">
-                  <span class="gauge-top-label mono" style="color: #38bdf8;">Mbps</span>
-                  <div class="gauge-val-box" style="border-color: rgba(56, 189, 248, 0.45);">
-                    <span id="bw-val" class="gauge-val mono" style="color: #38bdf8;">0.0</span>
-                  </div>
-                </div>
-              </div>
-              <span class="gauge-bottom-label mono">TX</span>
-            </div>
-          </div>
-
-          <div class="oled-row">
-            <div class="oled-card" style="border-color: rgba(34, 255, 136, 0.42);">
-              <span class="oled-label mono">RX</span>
-              <span id="rx-val" class="oled-value mono" style="color: #22ff88;">0 B</span>
-            </div>
-            <div class="oled-card" style="border-color: rgba(56, 189, 248, 0.42);">
-              <span class="oled-label mono">TX</span>
-              <span id="tx-val" class="oled-value mono" style="color: #38bdf8;">0 B</span>
-            </div>
-          </div>
-
-          <div id="error-banner" class="error-banner hidden">
-            <span id="error-banner-text"></span>
-            <span class="mono" style="font-weight: 700;">✕</span>
-          </div>
-        </section>
-
-        <!-- 2. Server Selection Card -->
-        <div id="server-card" class="server-card">
-          <div id="flag-badge" class="flag-badge mono"></div>
-          <div class="server-info">
-            <div class="server-name-row">
-              <span id="server-name-text" class="server-name">SG-Cloudflare-Reality-01</span>
-              <span id="server-dot" style="width: 7px; height: 7px; border-radius: 999px; background: #d9822b; flex-shrink: 0;"></span>
-            </div>
-            <div id="server-meta-text" class="server-meta mono">• VLESS-XTLS | Singapore | PING: —</div>
-          </div>
-          <button id="switch-server-btn" type="button" class="switch-btn mono">
-            <span>SWITCH</span>
-            <span>▾</span>
-          </button>
-        </div>
-
-        <!-- 3. Proton VPN-Style World Map Panel -->
-        <section class="map-card">
-          <div class="map-header">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span id="map-header-dot" style="width: 7px; height: 7px; border-radius: 999px; background: #64748b;"></span>
-              <span class="mono" style="font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: #232b35;">GLOBAL ROUTING MAP</span>
-            </div>
-            <div class="map-actions">
-              <button id="map-full-btn" type="button" class="map-link-btn mono" style="color: #0e3a53;">FULL MAP</button>
-            </div>
-          </div>
-
-          <div id="map-viewport" class="map-viewport" title="Drag to pan · Scroll wheel or double-click to zoom up to 18×">
-            <canvas id="world-map-canvas"></canvas>
-
-            <div class="map-regions-chip mono">
-              <span id="map-chip-dot" style="width: 6px; height: 6px; border-radius: 999px; background: #d97d48;"></span>
-              <span id="map-chip-text">17 REGIONS · 2.0×</span>
-            </div>
-
-            <div style="position: absolute; top: 8px; right: 8px; display: flex; gap: 5px;">
-              <button id="map-expand-hud" type="button" class="map-hud-btn" title="Open fullscreen world map">⤢</button>
-            </div>
-
-            <div class="map-hud-stack">
-              <button id="map-world-btn" type="button" class="map-hud-btn" title="Fit full world map (1×)">🌐</button>
-              <button id="map-recenter-btn" type="button" class="map-hud-btn" title="Center on active server">⌖</button>
-              <button id="map-zoom-in-btn" type="button" class="map-hud-btn" title="Zoom in (up to 18×)">+</button>
-              <button id="map-zoom-out-btn" type="button" class="map-hud-btn" title="Zoom out">−</button>
-            </div>
-
-            <div id="map-hub-popup" class="map-hub-popup hidden">
-              <div>
-                <div id="hub-popup-title" style="font-size: 11px; font-weight: 700; color: #f1f5f9;"></div>
-                <div id="hub-popup-city" class="mono" style="font-size: 9px; color: #94a3b8;"></div>
-              </div>
-              <button id="hub-popup-btn" type="button" class="copper-btn mono" style="min-height: 28px; padding: 5px 9px; font-size: 9px;">SERVERS</button>
-            </div>
-          </div>
-
-          <!-- Quick Zoom Level Presets Row -->
-          <div id="inline-zoom-presets" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
-            <button type="button" class="keycap mono" data-zoom="1.0" style="min-height: 28px; padding: 4px 6px; font-size: 8.5px;">1× WORLD</button>
-            <button type="button" class="keycap mono" data-zoom="3.0" style="min-height: 28px; padding: 4px 6px; font-size: 8.5px;">3× REGION</button>
-            <button type="button" class="keycap mono" data-zoom="7.0" style="min-height: 28px; padding: 4px 6px; font-size: 8.5px;">7× METRO</button>
-            <button type="button" class="keycap mono" data-zoom="14.0" style="min-height: 28px; padding: 4px 6px; font-size: 8.5px;">14× DETAIL</button>
-          </div>
-
-          <!-- Active Server Location Bar -->
-          <div class="map-readout-bar">
-            <div style="min-width: 0; flex: 1;">
-              <div id="map-loc-name" style="font-size: 11px; font-weight: 600; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Singapore</div>
-              <div id="map-loc-coords" class="mono" style="font-size: 9px; color: #38bdf8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">1.3521°, 103.8198° · Tap a country hub or zoom up to 18×</div>
-            </div>
-          </div>
-
-          <!-- User Location Bar (Automatic GPS / Network Location) -->
-          <div class="map-readout-bar">
-            <div style="min-width: 0; flex: 1;">
-              <div style="font-size: 11px; font-weight: 600; color: #f1f5f9;">YOUR LOCATION (AUTO GPS / NETWORK)</div>
-              <div id="user-loc-coords" class="mono" style="font-size: 9px; color: #38bdf8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Detecting exact or approximate device location…</div>
-            </div>
-            <button id="user-loc-pin-btn" type="button" class="mono" style="border-radius: 6px; background: #222a36; border: 1px solid #38bdf8; padding: 8px 10px; color: #38bdf8; font-size: 9px; font-weight: 700; cursor: pointer;">AUTO LOCATE</button>
-          </div>
-        </section>
-
-        <!-- 4. AI Live Sentinel Stream Card -->
-        <section class="sentinel-outer">
-          <div class="sentinel-inner">
-            <div class="sentinel-top">
-              <div>
-                <div class="mono" style="font-size: 11px; font-weight: 700; letter-spacing: 0.6px; color: #7dd3fc;">AI LIVE SENTINEL STREAM</div>
-                <div id="sentinel-subtitle" class="mono" style="font-size: 8.5px; color: #94a3b8;">XRAY CORE + LOCAL SERVER MATCH</div>
-              </div>
-              <div style="display: flex; gap: 6px;">
-                <button id="sentinel-pause-btn" type="button" class="sentinel-chip mono">PAUSE</button>
-                <button id="sentinel-clear-btn" type="button" class="sentinel-chip mono">CLEAR</button>
-              </div>
-            </div>
-
-            <div id="sentinel-log-box" class="sentinel-log-box mono"></div>
-
-            <button id="tools-drawer-toggle" type="button" class="drawer-toggle mono">
-              <span>✦ IMPORT CONFIG &amp; LOCAL SERVER MATCH</span>
-              <span id="tools-drawer-chevron">▾</span>
-            </button>
-
-            <div id="tools-drawer-content" class="hidden" style="display: flex; flex-direction: column; gap: 9px;">
-              <input
-                id="quick-import-input"
-                type="text"
-                class="recessed-input"
-                placeholder="Paste vless://, vmess://, trojan://, ss:// or Xray JSON"
-              />
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <button id="quick-import-btn" type="button" class="copper-btn mono">IMPORT LINK</button>
-                <button id="open-public-servers-btn" type="button" class="secondary-btn mono">PUBLIC SERVERS</button>
-              </div>
-
-              <div class="divider" style="background: #1f3647;"></div>
-
-              <div class="mono" style="font-size: 9px; font-weight: 700; color: #9fb2c4;">ACTIVITY PROFILE · LOCAL DISTANCE MATCH</div>
-              <div id="activity-row" class="keycap-row" style="grid-template-columns: repeat(4, 1fr);"></div>
-              <div style="font-size: 10px; color: #cbd5e1;">
-                Uses approximate region distance only; server latency and streaming capacity are not provided.
-              </div>
-              <button id="local-match-btn" type="button" class="copper-btn mono" style="width: 100%;">
-                LOCAL MATCH · FIND PUBLIC SERVER
-              </button>
-              <div id="recommendation-msg" class="hidden" style="font-size: 10.5px; color: #e2e8f0; line-height: 1.4;"></div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- TAB 2: CONFIG -->
-      <div id="tab-config" class="hidden" style="display: flex; flex-direction: column; gap: 12px;">
-        <h2 class="section-title mono">NETWORK &amp; ROUTING</h2>
-        <div class="metal-panel">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-            <div>
-              <div style="font-size: 13px; font-weight: 600; color: #f1f5f9;">Android VPN Lockdown</div>
-              <div style="font-size: 11px; color: #94a3b8;">Always-on VPN &amp; block non-VPN traffic</div>
-            </div>
-            <button id="vpn-settings-btn-1" type="button" class="secondary-btn mono">OPEN</button>
-          </div>
-
-          <div class="divider"></div>
-
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-            <div>
-              <div style="font-size: 13px; font-weight: 600; color: #f1f5f9;">DNS Resolver</div>
-              <div id="dns-detail-label" style="font-size: 11px; color: #94a3b8;">Active upstream DNS: 1.1.1.1</div>
-            </div>
-          </div>
-          <div id="dns-keycaps" class="keycap-row" style="grid-template-columns: repeat(4, 1fr);"></div>
-
-          <div class="divider"></div>
-
-          <div class="mono" style="font-size: 10px; font-weight: 700; color: #94a3b8;">ALLOWED PROTOCOLS</div>
-          <div id="protocol-toggles" class="keycap-row" style="grid-template-columns: repeat(4, 1fr);"></div>
-
-          <div class="divider"></div>
-
-          <div class="mono" style="font-size: 10px; font-weight: 700; color: #94a3b8;">ROUTING MODE</div>
-          <div id="route-keycaps" class="keycap-row" style="grid-template-columns: repeat(3, 1fr);"></div>
-        </div>
-
-        <button id="export-json-btn" type="button" class="copper-btn mono" style="width: 100%;">
-          EXPORT XRAY / V2RAY JSON
-        </button>
-      </div>
-
-      <!-- TAB 3: INFO -->
-      <div id="tab-info" class="hidden" style="display: flex; flex-direction: column; gap: 12px;">
-        <h2 class="section-title mono">LICENSE &amp; 1-KEY-PER-ACCOUNT ENFORCEMENT</h2>
-        <div class="metal-panel">
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">License State</span>
-            <span id="info-license-state" class="mono" style="font-size: 11px; font-weight: 700; color: #f5a623;">TRIAL_ACTIVE</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Trial Countdown</span>
-            <span id="info-trial-countdown" class="mono" style="font-size: 11px; font-weight: 700; color: #f1f5f9;">3D 00H 00M</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Server Access</span>
-            <span id="info-server-access" class="mono" style="font-size: 11px; font-weight: 700; color: #22ff88;">ALLOWED</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Account Binding</span>
-            <span id="info-bound-account" class="mono" style="font-size: 11px; font-weight: 700; color: #38bdf8;">1 Key = 1 Account</span>
-          </div>
-          <div class="mono" style="font-size: 9.5px; color: #94a3b8; line-height: 1.4;">
-            CLI: <span style="color: #f0c99e;">bash scripts/manage-keystore.sh generate-license-key &lt;email&gt;</span>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <button id="info-open-license-btn" type="button" class="copper-btn mono">ENTER LICENSE KEY</button>
-            <button id="info-simulate-expired-btn" type="button" class="secondary-btn mono">SIMULATE EXPIRED</button>
-          </div>
-          <button id="info-reset-trial-btn" type="button" class="secondary-btn mono" style="width: 100%;">RESET 3-DAY (72H) FREE TRIAL</button>
-        </div>
-
-        <h2 class="section-title mono">GITHUB RELEASE &amp; KEYSTORE SIGNING</h2>
-        <div class="metal-panel">
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Workflow</span>
-            <span class="mono" style="font-size: 11px; font-weight: 700; color: #f1f5f9;">.github/workflows/release-apk.yml</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Keystore Manager</span>
-            <span class="mono" style="font-size: 11px; font-weight: 700; color: #f1f5f9;">scripts/manage-keystore.sh</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Signing Alias</span>
-            <span class="mono" style="font-size: 11px; font-weight: 700; color: #f1f5f9;">upload (my-upload-key.jks)</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Env Secrets</span>
-            <span class="mono" style="font-size: 11px; font-weight: 700; color: #38bdf8;">KEYSTORE_BASE64 · STORE_PASSWORD · KEY_PASSWORD</span>
-          </div>
-          <div style="font-size: 11px; color: #94a3b8; line-height: 1.45;">
-            Push any <span class="mono" style="color: #f0c99e;">v*</span> git tag (e.g. <span class="mono" style="color: #f0c99e;">v1.0.5</span>) or trigger the GitHub Actions workflow to build, sign, verify, and publish the release APK + SHA-256 checksum to GitHub Releases.
-          </div>
-        </div>
-
-        <h2 class="section-title mono">DEVICE &amp; CORE TELEMETRY</h2>
-        <div class="metal-panel">
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Engine</span>
-            <span class="mono" style="font-size: 11px; font-weight: 700; color: #f1f5f9;">Copper Compass · Xray V1.8.16</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">App Version</span>
-            <span class="mono" style="font-size: 11px; font-weight: 700; color: #f1f5f9;">1.0.5</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Tunnel Service</span>
-            <span id="info-state" class="mono" style="font-size: 11px; font-weight: 700; color: #f1f5f9;">DISCONNECTED · Xray</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Active Protocol</span>
-            <span id="info-proto" class="mono" style="font-size: 11px; font-weight: 700; color: #f1f5f9;">FREEDOM</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Active Node</span>
-            <span id="info-node" class="mono" style="font-size: 11px; font-weight: 700; color: #f1f5f9;">SG-Cloudflare-Reality-01</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="font-size: 12px; color: #94a3b8;">Config Storage</span>
-            <span class="mono" style="font-size: 11px; font-weight: 700; color: #f1f5f9;">Device Private Preferences</span>
-          </div>
-        </div>
-
-        <div class="metal-panel">
-          <div style="font-size: 13px; font-weight: 700; color: #f0c99e;">ZERO-LOG &amp; DATA SAFETY</div>
-          <div style="font-size: 12px; color: #f1f5f9; line-height: 1.45;">
-            Configuration links are parsed locally and saved in private app preferences. No telemetry or advertising SDK is included.
-          </div>
-          <div style="font-size: 11px; color: #94a3b8; line-height: 1.45;">
-            VPN routing is powered by Android VpnService and the bundled Xray core. Always verify IP and DNS leak behavior on a physical device.
-          </div>
-        </div>
-      </div>
-
-      <footer class="footer-bar mono">
-        <span>NETCON SECURITY ARCHITECTURE</span>
-        <span>XRAY CORE · ZERO-LOG</span>
-      </footer>
     </main>
+
+    <!-- SENTINEL STREAM MODAL DIALOG -->
+    <div id="sentinel-modal" class="modal-backdrop hidden">
+      <div class="modal-panel" style="border-color: #284357;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <div>
+            <div class="mono" style="font-size: 12px; font-weight: 700; color: #7dd3fc;">AI LIVE SENTINEL STREAM</div>
+            <div id="sentinel-subtitle" class="mono" style="font-size: 8.5px; color: #94a3b8;">XRAY CORE + LOCAL TELEMETRY</div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button id="sentinel-pause-btn" type="button" class="sentinel-chip mono">PAUSE</button>
+            <button id="sentinel-clear-btn" type="button" class="sentinel-chip mono">CLEAR</button>
+          </div>
+        </div>
+        <div id="sentinel-log-box" class="sentinel-log-box mono"></div>
+        <button id="close-sentinel-modal" type="button" class="secondary-btn mono" style="width: 100%;">CLOSE</button>
+      </div>
+    </div>
+
+    <!-- QUICK IMPORT & LOCAL MATCH MODAL DIALOG -->
+    <div id="tools-modal" class="modal-backdrop hidden">
+      <div class="modal-panel" style="border-color: rgba(245, 166, 35, 0.55);">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <strong class="mono" style="font-size: 12px; color: #f0c99e;">IMPORT CONFIG &amp; LOCAL MATCH</strong>
+          <button id="close-tools-modal" type="button" class="secondary-btn mono" style="min-height: 30px; padding: 4px 10px;">✕</button>
+        </div>
+        <input
+          id="quick-import-input"
+          type="text"
+          class="recessed-input"
+          placeholder="Paste vless://, vmess://, trojan://, ss:// or Xray JSON"
+        />
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button id="quick-import-btn" type="button" class="copper-btn mono">IMPORT LINK</button>
+          <button id="open-public-servers-btn" type="button" class="secondary-btn mono">PUBLIC SERVERS</button>
+        </div>
+        <div class="divider" style="background: #1f3647;"></div>
+        <div class="mono" style="font-size: 9px; font-weight: 700; color: #9fb2c4;">ACTIVITY PROFILE · LOCAL DISTANCE MATCH</div>
+        <div id="activity-row" class="keycap-row" style="grid-template-columns: repeat(4, 1fr);"></div>
+        <div style="font-size: 10px; color: #cbd5e1;">
+          Matches nearest server using local region distance only; zero external AI telemetry.
+        </div>
+        <button id="local-match-btn" type="button" class="copper-btn mono" style="width: 100%;">
+          LOCAL MATCH · FIND PUBLIC SERVER
+        </button>
+        <div id="recommendation-msg" class="hidden" style="font-size: 10.5px; color: #e2e8f0; line-height: 1.4;"></div>
+      </div>
+    </div>
 
     <!-- LICENSE & 1-KEY-PER-ACCOUNT DIALOG -->
     <div id="license-modal" class="modal-backdrop hidden">
@@ -1656,6 +1607,7 @@
         userLocationBusy: false,
         dns: "1.1.1.1",
         route: "Bypass LAN",
+        batteryOptIgnored: localStorage.getItem("netcon_battery_opt_ignored") === "true",
         enabledProtocols: new Set(["vless", "vmess", "trojan", "shadowsocks", "socks", "freedom"]),
         activity: "Gaming",
         vpnState: "disconnected",
@@ -1885,15 +1837,30 @@
         const box = document.getElementById("sentinel-log-box");
         const sub = document.getElementById("sentinel-subtitle");
         const btn = document.getElementById("sentinel-pause-btn");
-        sub.textContent = state.sentinelPaused ? "STREAM PAUSED · LOCAL TELEMETRY" : "XRAY CORE + LOCAL SERVER MATCH";
+        const ticker = document.getElementById("sentinel-latest-line");
+        sub.textContent = state.sentinelPaused ? "STREAM PAUSED · LOCAL TELEMETRY" : "XRAY CORE + LOCAL TELEMETRY";
         btn.textContent = state.sentinelPaused ? "RESUME" : "PAUSE";
 
         if (state.sentinelLogs.length === 0) {
           box.innerHTML = `<div class="sentinel-line" style="color:#64748b;">[SENTINEL] Stream cleared. Awaiting tunnel or config activity…</div>`;
+          if (ticker) {
+            ticker.textContent = "[SENTINEL] Stream cleared · Tap LOGS to inspect";
+            ticker.style.color = "#64748b";
+          }
           return;
         }
+        const latest = state.sentinelLogs[state.sentinelLogs.length - 1];
+        if (ticker) {
+          let tColor = "#cbd5e1";
+          if (latest.startsWith("[ERR]")) tColor = "#fca5a5";
+          else if (latest.startsWith("[VPN]")) tColor = "#4ade80";
+          else if (latest.startsWith("[LOCAL]")) tColor = "#fcd34d";
+          else if (latest.startsWith("[PING]")) tColor = "#38bdf8";
+          ticker.textContent = latest;
+          ticker.style.color = tColor;
+        }
         box.innerHTML = state.sentinelLogs
-          .slice(-5)
+          .slice(-16)
           .map(line => {
             let color = "#cbd5e1";
             if (line.startsWith("[ERR]")) color = "#fca5a5";
@@ -1907,7 +1874,7 @@
 
       function updateDashboardUI() {
         const proto = getProtocol(state.savedConfig);
-        const protoLabel = !proto || proto === "FREEDOM" ? "VLESS-REALITY" : proto;
+        const protoLabel = !proto || proto === "FREEDOM" ? "VLESS" : proto;
         const pingLabel = state.pingMs !== null ? state.pingMs + "ms" : "—";
         const code = inferCountryCode(state.serverLocation, state.serverLat, state.serverLon) || "SG";
 
@@ -1918,12 +1885,12 @@
             state.vpnState === "connected" ? "#22ff88" : state.vpnState === "connecting" ? "#f5a623" : "#d9822b";
         }
         if (logoMeta) {
-          logoMeta.textContent = `${protoLabel}  ·  XRAY CORE  ·  ZERO-LOG`;
+          logoMeta.textContent = `${protoLabel} · XRAY`;
         }
 
         renderFlagBadge(code);
         document.getElementById("server-name-text").textContent = state.serverName || "No Server Selected";
-        document.getElementById("server-meta-text").textContent = `• ${protoLabel} | ${state.serverLocation || "PORT: 443"} | PING: ${pingLabel}`;
+        document.getElementById("server-meta-text").textContent = `${protoLabel} · ${state.serverLocation || "PORT 443"} · ${pingLabel}`;
         document.getElementById("server-dot").style.background = state.vpnState === "connected" ? "#22ff88" : "#d9822b";
 
         // Telemetry status pill (with pulsating dot on CONNECTING / ONLINE) & F-16 HUD chassis
@@ -2035,26 +2002,26 @@
         document.getElementById("rx-val").textContent = formatBytes(state.receivedBytes);
         document.getElementById("tx-val").textContent = formatBytes(state.sentBytes);
 
-        // Map readout bars
+        // Compact map overlay readout + GPS chip
         document.getElementById("map-loc-name").textContent = state.serverLocation || "Location Not Set";
         document.getElementById("map-loc-coords").textContent =
           state.serverLat !== null && state.serverLon !== null
-            ? `${state.serverLat.toFixed(4)}°, ${state.serverLon.toFixed(4)}° · Tap a country hub or zoom up to 18×`
-            : "Tap a country hub or import a server profile";
+            ? `${state.serverLocation || "Hub"} · ${state.serverLat.toFixed(2)}°, ${state.serverLon.toFixed(2)}°`
+            : "Tap hub pin to browse";
 
         const sourceSuffix = state.userLocationSource ? ` · ${state.userLocationSource}` : " · Auto-detected";
         document.getElementById("user-loc-coords").textContent =
           state.userLocationBusy
-            ? "Requesting location permission & reading GPS/Network…"
+            ? "Reading GPS…"
             : state.userLat !== null && state.userLon !== null
-              ? `${state.userLat.toFixed(4)}°, ${state.userLon.toFixed(4)}°${sourceSuffix}`
-              : state.userLocationSource || "Tap AUTO LOCATE to grant location permission";
+              ? `${state.userLat.toFixed(2)}°, ${state.userLon.toFixed(2)}°${sourceSuffix}`
+              : state.userLocationSource || "Tap AUTO GPS";
         document.getElementById("user-loc-pin-btn").textContent =
           state.userLocationBusy
-            ? "LOCATING…"
+            ? "GPS…"
             : state.userLat !== null && state.userLon !== null
-              ? "REFRESH GPS"
-              : "AUTO LOCATE";
+              ? "GPS ✓"
+              : "AUTO GPS";
 
         // Info tab
         document.getElementById("info-state").textContent = `${state.vpnState.toUpperCase()} · Xray`;
@@ -3093,7 +3060,10 @@
 
         document.getElementById("error-banner").addEventListener("click", () => showError(""));
         document.getElementById("server-card").addEventListener("click", () => openPublicServerModal(""));
-        document.getElementById("open-public-servers-btn").addEventListener("click", () => openPublicServerModal(""));
+        document.getElementById("open-public-servers-btn").addEventListener("click", () => {
+          document.getElementById("tools-modal").classList.add("hidden");
+          openPublicServerModal("");
+        });
 
         // Country dropdown options
         const countrySel = document.getElementById("directory-country-select");
@@ -3119,7 +3089,16 @@
           }
         });
 
-        // Sentinel & Tools Drawer
+        // Sentinel & Tools Modals
+        const openSentinelModal = () => {
+          renderSentinelLogs();
+          document.getElementById("sentinel-modal").classList.remove("hidden");
+        };
+        document.getElementById("sentinel-open-btn").addEventListener("click", openSentinelModal);
+        document.getElementById("sentinel-logs-chip").addEventListener("click", openSentinelModal);
+        document.getElementById("close-sentinel-modal").addEventListener("click", () => {
+          document.getElementById("sentinel-modal").classList.add("hidden");
+        });
         document.getElementById("sentinel-pause-btn").addEventListener("click", () => {
           state.sentinelPaused = !state.sentinelPaused;
           renderSentinelLogs();
@@ -3129,9 +3108,10 @@
           renderSentinelLogs();
         });
         document.getElementById("tools-drawer-toggle").addEventListener("click", () => {
-          const content = document.getElementById("tools-drawer-content");
-          const open = content.classList.toggle("hidden");
-          document.getElementById("tools-drawer-chevron").textContent = open ? "▾" : "▴";
+          document.getElementById("tools-modal").classList.remove("hidden");
+        });
+        document.getElementById("close-tools-modal").addEventListener("click", () => {
+          document.getElementById("tools-modal").classList.add("hidden");
         });
         document.getElementById("quick-import-btn").addEventListener("click", () => {
           try {
@@ -3139,6 +3119,7 @@
             const imp = parseXrayInput(raw);
             saveServer(JSON.stringify(imp.config), imp.name, "", null, null);
             document.getElementById("quick-import-input").value = "";
+            document.getElementById("tools-modal").classList.add("hidden");
             appendSentinelLog("[CFG] Imported local configuration");
             showError("Configuration saved on this device.");
           } catch (e) {
@@ -3330,7 +3311,7 @@
 
         // Config tab controls
         const renderConfigControls = () => {
-          document.getElementById("dns-detail-label").textContent = "Active upstream DNS: " + state.dns;
+          document.getElementById("dns-detail-label").textContent = state.dns;
           const dnsRow = document.getElementById("dns-keycaps");
           dnsRow.innerHTML = DNS_LIST.map(
             d => `<button type="button" class="keycap mono ${state.dns === d ? "selected" : ""}" data-dns="${d}">${d}</button>`
@@ -3365,7 +3346,38 @@
               renderConfigControls();
             });
           });
+
+          const batSwitch = document.getElementById("battery-opt-switch");
+          const batBadge = document.getElementById("battery-opt-badge");
+          const batDetail = document.getElementById("battery-opt-detail");
+          const batDoze = document.getElementById("battery-opt-doze");
+          if (batSwitch && batBadge && batDetail && batDoze) {
+            const ignored = Boolean(state.batteryOptIgnored);
+            batSwitch.setAttribute("aria-checked", String(ignored));
+            batSwitch.textContent = ignored ? "IGNORED" : "OFF";
+            batSwitch.style.borderColor = ignored ? "rgba(16, 185, 129, 0.7)" : "#3e4e68";
+            batSwitch.style.background = ignored ? "rgba(16, 185, 129, 0.18)" : "#131d2b";
+            batSwitch.style.color = ignored ? "#4ade80" : "#f1f5f9";
+            batBadge.textContent = ignored ? "UNRESTRICTED" : "OPTIMIZED";
+            batBadge.style.color = ignored ? "#10b981" : "#f5a623";
+            batBadge.style.borderColor = ignored ? "rgba(16, 185, 129, 0.55)" : "rgba(245, 166, 35, 0.55)";
+            batBadge.style.background = ignored ? "rgba(16, 185, 129, 0.14)" : "rgba(245, 166, 35, 0.14)";
+            batDetail.textContent = ignored
+              ? "Exempted · NetconVpnService protected from Doze & background kill"
+              : "Restricted · Toggle on to prevent Android from killing background tunnel";
+            batDoze.textContent = ignored ? "IGNORE ACTIVE" : "SYSTEM MANAGED";
+          }
         };
+        document.getElementById("battery-opt-switch").addEventListener("click", () => {
+          state.batteryOptIgnored = !state.batteryOptIgnored;
+          localStorage.setItem("netcon_battery_opt_ignored", String(state.batteryOptIgnored));
+          appendSentinelLog(
+            state.batteryOptIgnored
+              ? "[PWR] Battery Optimization Ignore ENABLED · NetconVpnService protected"
+              : "[PWR] Battery Optimization active · Exempt NetconVpnService in CONFIG"
+          );
+          renderConfigControls();
+        });
         renderConfigControls();
 
         document.getElementById("export-json-btn").addEventListener("click", async () => {
@@ -3376,6 +3388,13 @@
             showError("Unable to copy to clipboard in this context.");
           }
         });
+        const openVpnSettingsNotice = () => {
+          appendSentinelLog("[SYS] Android System VPN & Always-On panel is available in the APK build");
+          showError("Android System VPN Settings opens natively on Android devices.");
+        };
+        document.getElementById("vpn-settings-btn-1").addEventListener("click", openVpnSettingsNotice);
+        document.getElementById("vpn-settings-btn-2").addEventListener("click", openVpnSettingsNotice);
+        document.getElementById("info-system-vpn-btn").addEventListener("click", openVpnSettingsNotice);
 
         attachMapInteractions(document.getElementById("map-viewport"), false);
         attachMapInteractions(document.getElementById("full-map-viewport"), true);
@@ -3513,21 +3532,17 @@
 
           if (lic.state === "LICENSED") {
             bar.style.borderColor = "rgba(16, 185, 129, 0.6)";
+            bar.style.background = "#102a22";
             dot.style.background = "#10b981";
-            text.textContent = `LICENSED (${lic.account}) · ${lic.maskedKey}`;
-            text.style.color = "#f1f5f9";
-            badge.textContent = "LICENSED";
-            badge.style.color = "#4ade80";
-            badge.style.borderColor = "rgba(16, 185, 129, 0.6)";
-            badge.style.background = "#102a22";
+            text.textContent = "LICENSED";
+            text.style.color = "#4ade80";
             overlay.classList.add("hidden");
           } else if (lic.isFrozen) {
             bar.style.borderColor = "rgba(239, 68, 68, 0.75)";
+            bar.style.background = "rgba(239, 68, 68, 0.14)";
             dot.style.background = "#ef4444";
-            text.textContent = "TRIAL EXPIRED · APK FROZEN";
+            text.textContent = "FROZEN";
             text.style.color = "#fca5a5";
-            badge.textContent = "ACTIVATE KEY";
-            badge.style.color = "#f5a623";
             overlay.classList.remove("hidden");
             if (state.vpnState === "connected" || state.vpnState === "connecting") {
               state.vpnState = "error";
@@ -3539,12 +3554,11 @@
               updateDashboardUI();
             }
           } else {
-            bar.style.borderColor = "rgba(245, 166, 35, 0.55)";
+            bar.style.borderColor = "rgba(245, 166, 35, 0.58)";
+            bar.style.background = "rgba(245, 166, 35, 0.14)";
             dot.style.background = "#f5a623";
-            text.textContent = `FREE TRIAL · ${lic.countdown} LEFT`;
-            text.style.color = "#f1f5f9";
-            badge.textContent = "ACTIVATE KEY";
-            badge.style.color = "#f5a623";
+            text.textContent = lic.countdown;
+            text.style.color = "#f5a623";
             overlay.classList.add("hidden");
           }
 

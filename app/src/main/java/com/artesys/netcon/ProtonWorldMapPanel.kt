@@ -280,6 +280,8 @@ internal fun ProtonWorldMapPanel(
     vpnState: String,
     onBrowseCountryServers: (String) -> Unit,
     onRequestUserLocation: () -> Unit,
+    modifier: Modifier = Modifier,
+    compact: Boolean = true,
 ) {
     val context = LocalContext.current
     val countries by produceState<List<VectorCountry>>(initialValue = emptyList()) {
@@ -327,76 +329,80 @@ internal fun ProtonWorldMapPanel(
     )
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(if (compact) 12.dp else 14.dp))
             .background(
                 Brush.verticalGradient(
                     listOf(Color(0xFFDCE2E8), Color(0xFFB3BCC5), Color(0xFF939CA6)),
                 ),
             )
-            .border(1.5.dp, Color(0xFFE9EEF2), RoundedCornerShape(14.dp))
-            .padding(11.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+            .border(1.5.dp, Color(0xFFE9EEF2), RoundedCornerShape(if (compact) 12.dp else 14.dp))
+            .padding(if (compact) 6.dp else 11.dp),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 8.dp),
     ) {
-        // Header row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        if (!compact) {
+            // Header row
             Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(7.dp)
-                        .background(
-                            when (vpnState) {
-                                "connected" -> NetconColors.Online
-                                "connecting" -> NetconColors.Copper
-                                else -> Color(0xFF64748B)
-                            },
-                            CircleShape,
-                        ),
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .background(
+                                when (vpnState) {
+                                    "connected" -> NetconColors.Online
+                                    "connecting" -> NetconColors.Copper
+                                    else -> Color(0xFF64748B)
+                                },
+                                CircleShape,
+                            ),
+                    )
+                    Text(
+                        "GLOBAL ROUTING MAP",
+                        color = Color(0xFF232B35),
+                        fontFamily = JetBrainsMonoFont,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.8.sp,
+                    )
+                }
                 Text(
-                    "GLOBAL ROUTING MAP",
-                    color = Color(0xFF232B35),
-                    fontFamily = JetBrainsMonoFont,
+                    "FULL MAP",
+                    color = Color(0xFF0E3A53),
                     fontSize = 10.sp,
+                    fontFamily = JetBrainsMonoFont,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.8.sp,
+                    modifier = Modifier
+                        .testTag("map_expand_button")
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable { showFullMap = true }
+                        .padding(horizontal = 6.dp, vertical = 4.dp),
                 )
             }
-            Text(
-                "FULL MAP",
-                color = Color(0xFF0E3A53),
-                fontSize = 10.sp,
-                fontFamily = JetBrainsMonoFont,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .testTag("map_expand_button")
-                    .clip(RoundedCornerShape(4.dp))
-                    .clickable { showFullMap = true }
-                    .padding(horizontal = 6.dp, vertical = 4.dp),
-            )
         }
 
         // Interactive World Map Canvas
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1.55f)
+                .then(
+                    if (compact) Modifier.weight(1f) else Modifier.aspectRatio(1.55f),
+                )
                 .testTag("map_panel")
-                .clip(RoundedCornerShape(10.dp))
+                .clip(RoundedCornerShape(if (compact) 9.dp else 10.dp))
                 .background(
                     Brush.radialGradient(
                         colors = listOf(NetconColors.OceanDeep, NetconColors.OceanDark),
                     ),
                 )
-                .border(1.5.dp, Color(0xFF444E5A), RoundedCornerShape(10.dp))
+                .border(1.5.dp, Color(0xFF444E5A), RoundedCornerShape(if (compact) 9.dp else 10.dp))
                 .clipToBounds(),
         ) {
             WorldVectorCanvas(
@@ -449,13 +455,13 @@ internal fun ProtonWorldMapPanel(
             Row(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(8.dp)
+                    .padding(6.dp)
                     .clip(RoundedCornerShape(6.dp))
                     .background(NetconColors.DeepInk.copy(alpha = 0.86f))
                     .border(1.dp, NetconColors.BevelBorder.copy(alpha = 0.85f), RoundedCornerShape(6.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .padding(horizontal = 7.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
             ) {
                 Box(
                     Modifier
@@ -475,108 +481,203 @@ internal fun ProtonWorldMapPanel(
                     ""
                 }
                 val modeTag = when (vpnState) {
-                    "connected" -> "ACTIVE TUNNEL$distKm"
+                    "connected" -> "ACTIVE$distKm"
                     "connecting" -> "HANDSHAKE…"
-                    else -> "${WorldHubNodes.size} REGIONS"
+                    else -> "${WorldHubNodes.size} HUBS$distKm"
                 }
                 Text(
                     "$modeTag · ${"%.1f".format(animZoom)}×",
                     color = NetconColors.TextPrimary,
                     fontFamily = JetBrainsMonoFont,
-                    fontSize = 9.sp,
+                    fontSize = 8.5.sp,
                     fontWeight = FontWeight.Bold,
                 )
             }
 
-            // Top-right Expand button
+            // Top-right GPS Locate + Fullscreen Expand controls
             Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(8.dp),
+                    .padding(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
             ) {
+                Box(
+                    modifier = Modifier
+                        .testTag(if (compact) "user_location_map_button" else "user_location_hud_chip")
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(NetconColors.DeepInk.copy(alpha = 0.88f))
+                        .border(
+                            1.dp,
+                            if (userLatitude != null && userLongitude != null) {
+                                NetconColors.CyberCyan.copy(alpha = 0.7f)
+                            } else {
+                                NetconColors.BevelBorder
+                            },
+                            RoundedCornerShape(6.dp),
+                        )
+                        .clickable {
+                            onRequestUserLocation()
+                            if (userLatitude != null && userLongitude != null) {
+                                val (nx, ny) = projectNormalized(userLatitude, userLongitude)
+                                val z = targetZoom.coerceAtLeast(3.2f)
+                                targetZoom = z
+                                targetCenterX = clampCenterX(nx, z)
+                                targetCenterY = clampCenterY(ny, z)
+                            }
+                        }
+                        .padding(horizontal = 7.dp, vertical = 5.dp),
+                ) {
+                    Text(
+                        when {
+                            userLocationBusy -> "GPS…"
+                            userLatitude != null && userLongitude != null -> "GPS ✓"
+                            else -> "AUTO GPS"
+                        },
+                        color = NetconColors.CyberCyan,
+                        fontFamily = JetBrainsMonoFont,
+                        fontSize = 8.5.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
                 MapHudButton(
                     icon = Icons.Filled.OpenInFull,
                     contentDescription = "Open fullscreen world map",
+                    modifier = if (compact) Modifier.testTag("map_expand_button") else Modifier,
                     onClick = { showFullMap = true },
                 )
             }
 
-            // Bottom-right Zoom / Recenter / World Overview controls
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-            ) {
-                MapHudButton(
-                    icon = Icons.Filled.Public,
-                    contentDescription = "Fit full world map",
-                    modifier = Modifier.testTag("map_world_button"),
-                    onClick = {
-                        targetZoom = 1.0f
-                        targetCenterX = 0.50f
-                        targetCenterY = 0.48f
-                    },
-                )
-                MapHudButton(
-                    icon = Icons.Filled.MyLocation,
-                    contentDescription = "Center on active server",
-                    modifier = Modifier.testTag("map_recenter_button"),
-                    onClick = {
-                        if (latitude != null && longitude != null) {
-                            val (nx, ny) = projectNormalized(latitude, longitude)
-                            val z = if (targetZoom < 3.5f) 4.2f else (targetZoom * 1.6f).coerceAtMost(MAX_ZOOM)
-                            targetZoom = z
-                            targetCenterX = clampCenterX(nx, z)
-                            targetCenterY = clampCenterY(ny, z)
-                        } else {
+            // Bottom-right Zoom / Recenter / World Overview controls (compact horizontal bar or full stack)
+            if (compact) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    MapHudButton(
+                        icon = Icons.Filled.Public,
+                        contentDescription = "Fit full world map",
+                        modifier = Modifier.testTag("map_world_button"),
+                        onClick = {
+                            targetZoom = 1.0f
                             targetCenterX = 0.50f
                             targetCenterY = 0.48f
+                        },
+                    )
+                    MapHudButton(
+                        icon = Icons.Filled.MyLocation,
+                        contentDescription = "Center on active server",
+                        modifier = Modifier.testTag("map_recenter_button"),
+                        onClick = {
+                            if (latitude != null && longitude != null) {
+                                val (nx, ny) = projectNormalized(latitude, longitude)
+                                val z = if (targetZoom < 3.5f) 4.2f else (targetZoom * 1.6f).coerceAtMost(MAX_ZOOM)
+                                targetZoom = z
+                                targetCenterX = clampCenterX(nx, z)
+                                targetCenterY = clampCenterY(ny, z)
+                            } else {
+                                targetCenterX = 0.50f
+                                targetCenterY = 0.48f
+                                targetZoom = 1.0f
+                            }
+                        },
+                    )
+                    MapHudButton(
+                        icon = Icons.Filled.Add,
+                        contentDescription = "Zoom in",
+                        modifier = Modifier.testTag("map_zoom_in_button"),
+                        onClick = {
+                            val nextZ = (targetZoom * 1.55f).coerceAtMost(MAX_ZOOM)
+                            targetZoom = nextZ
+                            targetCenterX = clampCenterX(targetCenterX, nextZ)
+                            targetCenterY = clampCenterY(targetCenterY, nextZ)
+                        },
+                    )
+                    MapHudButton(
+                        icon = Icons.Filled.Remove,
+                        contentDescription = "Zoom out",
+                        modifier = Modifier.testTag("map_zoom_out_button"),
+                        onClick = {
+                            val nextZ = (targetZoom / 1.55f).coerceAtLeast(MIN_ZOOM)
+                            targetZoom = nextZ
+                            targetCenterX = clampCenterX(targetCenterX, nextZ)
+                            targetCenterY = clampCenterY(targetCenterY, nextZ)
+                        },
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    MapHudButton(
+                        icon = Icons.Filled.Public,
+                        contentDescription = "Fit full world map",
+                        modifier = Modifier.testTag("map_world_button"),
+                        onClick = {
                             targetZoom = 1.0f
-                        }
-                    },
-                )
-                MapHudButton(
-                    icon = Icons.Filled.Add,
-                    contentDescription = "Zoom in",
-                    modifier = Modifier.testTag("map_zoom_in_button"),
-                    onClick = {
-                        val nextZ = (targetZoom * 1.55f).coerceAtMost(MAX_ZOOM)
-                        targetZoom = nextZ
-                        targetCenterX = clampCenterX(targetCenterX, nextZ)
-                        targetCenterY = clampCenterY(targetCenterY, nextZ)
-                    },
-                )
-                MapHudButton(
-                    icon = Icons.Filled.Remove,
-                    contentDescription = "Zoom out",
-                    modifier = Modifier.testTag("map_zoom_out_button"),
-                    onClick = {
-                        val nextZ = (targetZoom / 1.55f).coerceAtLeast(MIN_ZOOM)
-                        targetZoom = nextZ
-                        targetCenterX = clampCenterX(targetCenterX, nextZ)
-                        targetCenterY = clampCenterY(targetCenterY, nextZ)
-                    },
-                )
+                            targetCenterX = 0.50f
+                            targetCenterY = 0.48f
+                        },
+                    )
+                    MapHudButton(
+                        icon = Icons.Filled.MyLocation,
+                        contentDescription = "Center on active server",
+                        modifier = Modifier.testTag("map_recenter_button"),
+                        onClick = {
+                            if (latitude != null && longitude != null) {
+                                val (nx, ny) = projectNormalized(latitude, longitude)
+                                val z = if (targetZoom < 3.5f) 4.2f else (targetZoom * 1.6f).coerceAtMost(MAX_ZOOM)
+                                targetZoom = z
+                                targetCenterX = clampCenterX(nx, z)
+                                targetCenterY = clampCenterY(ny, z)
+                            } else {
+                                targetCenterX = 0.50f
+                                targetCenterY = 0.48f
+                                targetZoom = 1.0f
+                            }
+                        },
+                    )
+                    MapHudButton(
+                        icon = Icons.Filled.Add,
+                        contentDescription = "Zoom in",
+                        modifier = Modifier.testTag("map_zoom_in_button"),
+                        onClick = {
+                            val nextZ = (targetZoom * 1.55f).coerceAtMost(MAX_ZOOM)
+                            targetZoom = nextZ
+                            targetCenterX = clampCenterX(targetCenterX, nextZ)
+                            targetCenterY = clampCenterY(targetCenterY, nextZ)
+                        },
+                    )
+                    MapHudButton(
+                        icon = Icons.Filled.Remove,
+                        contentDescription = "Zoom out",
+                        modifier = Modifier.testTag("map_zoom_out_button"),
+                        onClick = {
+                            val nextZ = (targetZoom / 1.55f).coerceAtLeast(MIN_ZOOM)
+                            targetZoom = nextZ
+                            targetCenterX = clampCenterX(targetCenterX, nextZ)
+                            targetCenterY = clampCenterY(targetCenterY, nextZ)
+                        },
+                    )
+                }
             }
 
-            // Floating HUD card when user taps any country hub pin on the world map
-            androidx.compose.animation.AnimatedVisibility(
-                visible = selectedHub != null,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(8.dp),
-            ) {
+            // Bottom-left HUD: tapped country hub card or compact coordinates pill
+            if (selectedHub != null) {
                 selectedHub?.let { hub ->
                     Row(
                         modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(6.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(NetconColors.DeepInk.copy(alpha = 0.92f))
                             .border(1.dp, NetconColors.Copper, RoundedCornerShape(8.dp))
-                            .padding(horizontal = 10.dp, vertical = 7.dp),
+                            .padding(horizontal = 8.dp, vertical = 5.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
@@ -584,14 +685,14 @@ internal fun ProtonWorldMapPanel(
                             Text(
                                 "${hub.code} · ${hub.countryName}",
                                 color = NetconColors.TextPrimary,
-                                fontSize = 11.sp,
+                                fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                             )
                             Text(
-                                "${hub.cityLabel} · %.2f°, %.2f°".format(hub.latitude, hub.longitude),
+                                "${hub.cityLabel} · %.1f°, %.1f°".format(hub.latitude, hub.longitude),
                                 color = NetconColors.TextSecondary,
                                 fontFamily = JetBrainsMonoFont,
-                                fontSize = 9.sp,
+                                fontSize = 8.sp,
                             )
                         }
                         Box(
@@ -605,169 +706,197 @@ internal fun ProtonWorldMapPanel(
                                     onBrowseCountryServers(hub.code)
                                     selectedHub = null
                                 }
-                                .padding(horizontal = 9.dp, vertical = 6.dp),
+                                .padding(horizontal = 8.dp, vertical = 5.dp),
                         ) {
                             Text(
                                 "SERVERS",
                                 color = Color(0xFF1D0E05),
                                 fontFamily = JetBrainsMonoFont,
-                                fontSize = 9.sp,
+                                fontSize = 8.5.sp,
                                 fontWeight = FontWeight.Bold,
                             )
                         }
                     }
                 }
-            }
-        }
-
-        // Quick Zoom Level Presets Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            listOf(
-                "1× WORLD" to 1.0f,
-                "3× REGION" to 3.0f,
-                "7× METRO" to 7.0f,
-                "14× DETAIL" to 14.0f,
-            ).forEach { (label, presetZoom) ->
-                val isCurrent = kotlin.math.abs(targetZoom - presetZoom) < 0.85f
+            } else if (compact) {
+                val locTag = locationName.ifBlank { "Global Hub" }
+                val coordsTag = if (latitude != null && longitude != null) {
+                    " · %.2f°, %.2f°".format(latitude, longitude)
+                } else {
+                    ""
+                }
                 Box(
                     modifier = Modifier
-                        .weight(1f)
+                        .align(Alignment.BottomStart)
+                        .padding(6.dp)
                         .clip(RoundedCornerShape(6.dp))
-                        .background(if (isCurrent) Color(0xFF162435) else Color(0xFF0A1017))
-                        .border(
-                            1.dp,
-                            if (isCurrent) NetconColors.CyberCyan else Color(0xFF47525E),
-                            RoundedCornerShape(6.dp),
-                        )
-                        .clickable {
-                            targetZoom = presetZoom
-                            if (presetZoom == 1.0f) {
-                                targetCenterX = 0.50f
-                                targetCenterY = 0.48f
-                            } else if (latitude != null && longitude != null) {
-                                val (nx, ny) = projectNormalized(latitude, longitude)
-                                targetCenterX = clampCenterX(nx, presetZoom)
-                                targetCenterY = clampCenterY(ny, presetZoom)
-                            }
-                        }
-                        .padding(vertical = 5.dp),
-                    contentAlignment = Alignment.Center,
+                        .background(NetconColors.DeepInk.copy(alpha = 0.84f))
+                        .border(1.dp, NetconColors.BevelBorder.copy(alpha = 0.75f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 7.dp, vertical = 4.dp),
                 ) {
                     Text(
-                        label,
-                        color = if (isCurrent) NetconColors.CyberCyan else NetconColors.TextSecondary,
+                        "$locTag$coordsTag",
+                        color = NetconColors.CyberCyan,
                         fontFamily = JetBrainsMonoFont,
                         fontSize = 8.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
         }
 
-        // Active server node readout bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF0A1017))
-                .border(1.dp, Color(0xFF47525E), RoundedCornerShape(8.dp))
-                .padding(horizontal = 11.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    locationName.ifBlank { "Server Region" },
-                    color = NetconColors.TextPrimary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                val coordText = if (latitude != null && longitude != null) {
-                    "%.4f°, %.4f° · Tap any globe node to browse servers".format(latitude, longitude)
-                } else {
-                    "Select a server profile or tap a regional node on the map"
-                }
-                Text(
-                    coordText,
-                    color = NetconColors.CyberCyan,
-                    fontFamily = JetBrainsMonoFont,
-                    fontSize = 9.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-
-        // Automatic User Location Bar (GPS / Network Permission)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF0A1017))
-                .border(1.dp, Color(0xFF47525E), RoundedCornerShape(8.dp))
-                .padding(horizontal = 11.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    "YOUR LOCATION (AUTO GPS / NETWORK)",
-                    color = NetconColors.TextPrimary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                val userLocSummary = when {
-                    userLocationBusy -> userLocationSource.ifBlank { "Acquiring device location…" }
-                    userLatitude != null && userLongitude != null -> {
-                        val prefix = userLocationSource.ifBlank { "Auto-detected" }
-                        "$prefix · %.4f°, %.4f°".format(userLatitude, userLongitude)
-                    }
-                    userLocationSource.isNotBlank() -> userLocationSource
-                    else -> "Tap AUTO LOCATE to grant location permission"
-                }
-                Text(
-                    userLocSummary,
-                    color = NetconColors.CyberCyan,
-                    fontFamily = JetBrainsMonoFont,
-                    fontSize = 9.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .testTag("user_location_map_button")
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(NetconColors.PanelElevated)
-                    .border(1.dp, NetconColors.CyberCyan, RoundedCornerShape(6.dp))
-                    .clickable {
-                        onRequestUserLocation()
-                        if (userLatitude != null && userLongitude != null) {
-                            val (nx, ny) = projectNormalized(userLatitude, userLongitude)
-                            val z = targetZoom.coerceAtLeast(3.2f)
-                            targetZoom = z
-                            targetCenterX = clampCenterX(nx, z)
-                            targetCenterY = clampCenterY(ny, z)
-                        }
-                    }
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
+        if (!compact) {
+            // Quick Zoom Level Presets Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Text(
-                    when {
-                        userLocationBusy -> "LOCATING…"
-                        userLatitude != null && userLongitude != null -> "REFRESH GPS"
-                        else -> "AUTO LOCATE"
-                    },
-                    color = NetconColors.CyberCyan,
-                    fontFamily = JetBrainsMonoFont,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                )
+                listOf(
+                    "1× WORLD" to 1.0f,
+                    "3× REGION" to 3.0f,
+                    "7× METRO" to 7.0f,
+                    "14× DETAIL" to 14.0f,
+                ).forEach { (label, presetZoom) ->
+                    val isCurrent = kotlin.math.abs(targetZoom - presetZoom) < 0.85f
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (isCurrent) Color(0xFF162435) else Color(0xFF0A1017))
+                            .border(
+                                1.dp,
+                                if (isCurrent) NetconColors.CyberCyan else Color(0xFF47525E),
+                                RoundedCornerShape(6.dp),
+                            )
+                            .clickable {
+                                targetZoom = presetZoom
+                                if (presetZoom == 1.0f) {
+                                    targetCenterX = 0.50f
+                                    targetCenterY = 0.48f
+                                } else if (latitude != null && longitude != null) {
+                                    val (nx, ny) = projectNormalized(latitude, longitude)
+                                    targetCenterX = clampCenterX(nx, presetZoom)
+                                    targetCenterY = clampCenterY(ny, presetZoom)
+                                }
+                            }
+                            .padding(vertical = 5.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            label,
+                            color = if (isCurrent) NetconColors.CyberCyan else NetconColors.TextSecondary,
+                            fontFamily = JetBrainsMonoFont,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+
+            // Active server node readout bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF0A1017))
+                    .border(1.dp, Color(0xFF47525E), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 11.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        locationName.ifBlank { "Server Region" },
+                        color = NetconColors.TextPrimary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    val coordText = if (latitude != null && longitude != null) {
+                        "%.4f°, %.4f° · Tap any globe node to browse servers".format(latitude, longitude)
+                    } else {
+                        "Select a server profile or tap a regional node on the map"
+                    }
+                    Text(
+                        coordText,
+                        color = NetconColors.CyberCyan,
+                        fontFamily = JetBrainsMonoFont,
+                        fontSize = 9.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+
+            // Automatic User Location Bar (GPS / Network Permission)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF0A1017))
+                    .border(1.dp, Color(0xFF47525E), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 11.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        "YOUR LOCATION (AUTO GPS / NETWORK)",
+                        color = NetconColors.TextPrimary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    val userLocSummary = when {
+                        userLocationBusy -> userLocationSource.ifBlank { "Acquiring device location…" }
+                        userLatitude != null && userLongitude != null -> {
+                            val prefix = userLocationSource.ifBlank { "Auto-detected" }
+                            "$prefix · %.4f°, %.4f°".format(userLatitude, userLongitude)
+                        }
+                        userLocationSource.isNotBlank() -> userLocationSource
+                        else -> "Tap AUTO LOCATE to grant location permission"
+                    }
+                    Text(
+                        userLocSummary,
+                        color = NetconColors.CyberCyan,
+                        fontFamily = JetBrainsMonoFont,
+                        fontSize = 9.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .testTag("user_location_map_button")
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(NetconColors.PanelElevated)
+                        .border(1.dp, NetconColors.CyberCyan, RoundedCornerShape(6.dp))
+                        .clickable {
+                            onRequestUserLocation()
+                            if (userLatitude != null && userLongitude != null) {
+                                val (nx, ny) = projectNormalized(userLatitude, userLongitude)
+                                val z = targetZoom.coerceAtLeast(3.2f)
+                                targetZoom = z
+                                targetCenterX = clampCenterX(nx, z)
+                                targetCenterY = clampCenterY(ny, z)
+                            }
+                        }
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                ) {
+                    Text(
+                        when {
+                            userLocationBusy -> "LOCATING…"
+                            userLatitude != null && userLongitude != null -> "REFRESH GPS"
+                            else -> "AUTO LOCATE"
+                        },
+                        color = NetconColors.CyberCyan,
+                        fontFamily = JetBrainsMonoFont,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
             }
         }
     }
