@@ -87,30 +87,15 @@ class MainActivity : ComponentActivity() {
                 android.graphics.Color.TRANSPARENT,
             ),
         )
-        savedConfig = preferences.getString("xray_config", "").let {
-            if (it.isNullOrBlank()) {
-                // Default valid sample VLESS/Freedom config for SG-Cloudflare-Reality-01
-                "{\"log\":{\"loglevel\":\"none\"},\"dns\":{\"servers\":[\"1.1.1.1\"]},\"outbounds\":[{\"tag\":\"proxy\",\"protocol\":\"freedom\",\"settings\":{}},{\"tag\":\"direct\",\"protocol\":\"freedom\",\"settings\":{}},{\"tag\":\"block\",\"protocol\":\"blackhole\",\"settings\":{}}]}"
-            } else {
-                it
-            }
-        }
-        savedName = preferences.getString("server_name", "").let { if (it.isNullOrBlank()) "SG-Cloudflare-Reality-01" else it }
-        serverLocation = preferences.getString("server_location", "Singapore").let { if (it.isNullOrBlank()) "Singapore" else it }
-        val storedLat = preferences.getString("server_latitude", null)?.toDoubleOrNull()
-        val storedLon = preferences.getString("server_longitude", null)?.toDoubleOrNull()
-        if (storedLat == null && storedLon == null && savedName == "SG-Cloudflare-Reality-01") {
-            serverLatitude = 1.3521
-            serverLongitude = 103.8198
-        } else {
-            serverLatitude = storedLat
-            serverLongitude = storedLon
-        }
+        savedConfig = preferences.getString("xray_config", "").orEmpty()
+        savedName = preferences.getString("server_name", "").orEmpty()
+        serverLocation = preferences.getString("server_location", "").orEmpty()
+        serverLatitude = preferences.getString("server_latitude", null)?.toDoubleOrNull()
+        serverLongitude = preferences.getString("server_longitude", null)?.toDoubleOrNull()
         userLatitude = preferences.getString("user_latitude", null)?.toDoubleOrNull()
         userLongitude = preferences.getString("user_longitude", null)?.toDoubleOrNull()
         userLocationSource = preferences.getString("user_location_source", "").orEmpty()
         licenseStatus = NetconLicenseManager.evaluateStatus(this)
-
         batteryOptimizationIgnored = BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this)
 
         batteryOptimizationLauncher = registerForActivityResult(
@@ -161,8 +146,6 @@ class MainActivity : ComponentActivity() {
                     licenseStatus = licenseStatus,
                     onRefreshLicenseStatus = { refreshLicenseStatus() },
                     onActivateLicenseKey = ::activateLicenseKey,
-                    onSimulateTrialExpired = ::simulateTrialExpired,
-                    onResetTrialWindow = ::resetTrialWindow,
                     feedback = feedback,
                     onFeedbackDismiss = { feedback = "" },
                     onImport = ::importConfiguration,
@@ -202,12 +185,10 @@ class MainActivity : ComponentActivity() {
                     onMeasurePing = {
                         withContext(Dispatchers.IO) { measureServerLatencyMs(savedConfig) }
                     },
-                    onSelectPresetProfile = ::selectPresetProfile,
                 )
             }
         }
         handleIncomingIntent(intent)
-        // Automatically request location permission or resolve user location on launch
         requestAutomaticUserLocation(autoTriggered = true)
     }
 
@@ -311,7 +292,6 @@ class MainActivity : ComponentActivity() {
 
         if (bestLastKnown != null) {
             applyResolvedLocation(bestLastKnown, fineGranted)
-            // If cached fix is recent (< 5 minutes), no need to block on a new fix
             val ageMs = System.currentTimeMillis() - bestLastKnown.time
             if (ageMs in 0..300_000L) {
                 userLocationBusy = false
@@ -472,21 +452,6 @@ class MainActivity : ComponentActivity() {
         return result
     }
 
-    private fun simulateTrialExpired(expired: Boolean) {
-        licenseStatus = NetconLicenseManager.setSimulatedTrialExpired(this, expired)
-        if (expired) {
-            disconnectVpn()
-            feedback = "3-day free trial expired. APK frozen until a valid license key is activated."
-        } else {
-            feedback = "Trial state restored."
-        }
-    }
-
-    private fun resetTrialWindow() {
-        licenseStatus = NetconLicenseManager.resetTrialWindow(this)
-        feedback = "3-day (72h) free trial reset."
-    }
-
     private fun importConfiguration(raw: String): Boolean {
         if (!refreshLicenseStatus().isAccessAllowed) {
             feedback = "3-day free trial expired. Activate a license key to import or connect to servers."
@@ -512,16 +477,6 @@ class MainActivity : ComponentActivity() {
         val coords = countryCoordinates(node.countryCode)
         saveServer(node.configJson, node.name, country, coords?.first, coords?.second)
         feedback = "Free public server imported. It is untrusted and has not been tested."
-    }
-
-    private fun selectPresetProfile(preset: NativeXrayConfig.ServerProfilePreset) {
-        if (!refreshLicenseStatus().isAccessAllowed) {
-            feedback = "3-day free trial expired. Activate a license key to switch or connect to servers."
-            return
-        }
-        val locationLabel = "${preset.cityLabel}, ${preset.countryName}"
-        saveServer(preset.configJson, preset.name, locationLabel, preset.latitude, preset.longitude)
-        feedback = "Activated ${preset.name} (${preset.transportSummary})."
     }
 
     private fun saveServer(
@@ -678,7 +633,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun measureServerLatencyMs(configText: String): Int? {
-        val (host, port) = extractTargetEndpoint(configText) ?: ("1.1.1.1" to 443)
+        val (host, port) = extractTargetEndpoint(configText) ?: return null
         return try {
             val started = SystemClock.elapsedRealtime()
             Socket().use { socket ->
