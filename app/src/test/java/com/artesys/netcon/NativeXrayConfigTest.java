@@ -10,8 +10,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.util.List;
-
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public final class NativeXrayConfigTest {
@@ -71,10 +69,7 @@ public final class NativeXrayConfigTest {
     }
 
     @Test
-    public void providesStabilizedMultiProtocolPresetProfiles() {
-        List<NativeXrayConfig.ServerProfilePreset> presets = NativeXrayConfig.presetProfiles();
-        assertTrue(presets.size() >= 6);
-        assertEquals("SG-Cloudflare-Reality-01", presets.get(0).name);
-        assertEquals("SG", presets.get(0).countryCode);
+    public void containsNoHardcodedFakePresetProfiles() {
+        assertTrue(NativeXrayConfig.presetProfiles().isEmpty());
     }
 }
